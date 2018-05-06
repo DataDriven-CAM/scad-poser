@@ -1,0 +1,25 @@
+{
+  "name": "scad-poser",
+  "version": "0.0.1",
+  "description": "Extended scad editor, viewer and cnc generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DataDriven-CAM/scad-poser.git"
+  },
+  "author": "Roger I Martin <mathmldashx@yahoo.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DataDriven-CAM/scad-poser/issues"
+  },
+  "homepage": "https://github.com/DataDriven-CAM/scad-poser#readme",
+  "devDependencies": {
+    "gulp": "^4.0.0-alpha.3",
+    "gulp-concat": "^2.6.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^3.0.0"
+  }
+}
