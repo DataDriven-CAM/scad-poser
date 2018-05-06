@@ -8,7 +8,9 @@ var uglify = require('gulp-uglify');
 var jsFiles = 'bower_components/antlr4/runtime/JavaScript/src/antlr4/**/*.js',
     velvetFile = '../velvet/Velvet.js',
     velvetFiles = '../velvet/**/*.js',
+    cssFile = '../velvet/css/velvet.css',
     jsDest = 'js',
+    cssDest = 'css',
     requireFile = 'bower_components/antlr4/runtime/JavaScript/src/lib/require.js',
     requireDest = '.';
 
@@ -28,10 +30,16 @@ gulp.task('velvet-copy', function(done) {
         .pipe(gulp.dest(jsDest));
 });
 
-gulp.task('default', gulp.series('set-java-env', gulp.series('antlr4-symlink', gulp.series('velvet-copy', function(done) {
+gulp.task('velvet-css-copy', function(done) {
+    return gulp.src([cssFile, '../velvet/**/*.css'])
+        .pipe(concat('velvet.css'))
+        .pipe(gulp.dest(cssDest));
+});
+
+gulp.task('default', gulp.series('set-java-env', gulp.series('antlr4-symlink', gulp.series('velvet-copy', gulp.series('velvet-css-copy', function(done) {
   // place code for your default task here
   done();
-}))));
+})))));
 
 /*gulp.task('scripts', function(done) {
     return gulp.src(jsFiles)

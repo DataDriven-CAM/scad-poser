@@ -3,19 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <title>SCAD editor created with ANTLR4</title>
-  <link rel="stylesheet" type="text/css" href="index.css">
-  <link rel="stylesheet" type="text/css" href="css/autocomplete.css">
+  <link rel="stylesheet" type="text/css" href="css/velvet.css">
 
   <script src="require.js"></script>
-  <script src="js/autocomplete.js"></script>
   <script src="js/velvet.js"></script>
   <script type="application/javascript">
+  
   function viewStylish(e, tokens, lexer, parser, tree){
     var canvas = document.getElementById('canvasEditor');
     var lines=tokens.tokens[0].source[1].strdata.split("\n");
     canvas.height=100+lines.length*16;
     velvet = new pmc.Velvet(canvas, tokens, lexer, parser, tree);
-    autocomplete(document.getElementById("g4Input"), velvet.autoList);
+    //autocomplete(document.getElementById("g4Input"), velvet.autoList);
     var xhr = new XMLHttpRequest(); 
     xhr.open('GET', "/scad/SCADLexer.tokens", true); 
     //xhr.responseType = "blob";
@@ -38,10 +37,7 @@
   <div>
     <div id="info" style="width: 400px; float: left;">
       <input type="file" id="files" name="files[]" multiple />
-      <output id="list" onchange="viewStylish(this)"></output>
-    </div>
-    <div class="autocomplete" style="width:200px;">
-      <input id="g4Input" type="text" name="g4Literals" placeholder="Literals">
+      <output id="list"></output>
     </div>
   </div>
   <div id="container" width="100%" height="100%" style="clear:both;">
@@ -51,7 +47,6 @@
     <footer id="foot"></footer>
   </div>
 
-  <script src="index.js" type="text/javascript" charset="utf-8"></script>
   <script src="js/file-reader-logic.js" type="text/javascript" charset="utf-8"></script>
 </body>
 </html>
