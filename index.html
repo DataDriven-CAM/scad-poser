@@ -7,13 +7,18 @@
 
   <script src="require.js"></script>
   <script src="js/velvet.js"></script>
-  <script type="application/javascript">
+  <script src="js/StreamSaver.js"></script>
+<script type="application/javascript">
   
   function viewStylish(e, tokens, lexer, parser, tree){
     var canvas = document.getElementById('canvasEditor');
     var lines=tokens.tokens[0].source[1].strdata.split("\n");
     canvas.height=100+lines.length*16;
     velvet = new pmc.Velvet(canvas, tokens, lexer, parser, tree);
+    velvet.addKeyListener((event) => {
+          console.log(event.key);
+    });
+
     //autocomplete(document.getElementById("g4Input"), velvet.autoList);
     var xhr = new XMLHttpRequest(); 
     xhr.open('GET', "/scad/SCADLexer.tokens", true); 
