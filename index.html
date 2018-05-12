@@ -16,7 +16,14 @@
     canvas.height=100+lines.length*16;
     velvet = new pmc.Velvet(canvas, tokens, lexer, parser, tree);
     velvet.addKeyListener((event) => {
-          console.log(event.key);
+      console.log(event.key);
+      const fileStream = streamSaver.createWriteStream('filename.scad')
+      const writer = fileStream.getWriter()
+      const encoder = new TextEncoder
+      let uint8array = encoder.encode(velvet.text)
+      
+      writer.write(uint8array)
+      writer.close()
     });
 
     //autocomplete(document.getElementById("g4Input"), velvet.autoList);
