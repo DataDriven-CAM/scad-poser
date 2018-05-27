@@ -18,6 +18,8 @@
     "antlr4": "antlr/antlr4#^4.7.1",
     "StreamSaver.js": "jimmywarting/StreamSaver.js#^1.0.0",
     "cam-io": "DataDriven-CAM/cam-io",
-    "velvet": "DataDriven-CAM/velvet"
+    "velvet": "DataDriven-CAM/velvet",
+    "cytoscape": "^3.2.12",
+    "cytoscape-cose-bilkent": "^4.0.0"
   }
 }

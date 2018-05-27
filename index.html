@@ -1,14 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SCAD editor created with ANTLR4</title>
   <link rel="stylesheet" type="text/css" href="css/velvet.css">
 
   <script src="require.js"></script>
   <script src="js/velvet.js"></script>
   <script src="js/StreamSaver.js"></script>
+  <script src="js/cytoscape.min.js"></script>
+  <script src="js/lib/cytoscape-cose-bilkent.js"></script>
 <script type="application/javascript">
+var antlr4 = require('antlr4/index');
+var ATNState = require('antlr4/atn/ATNState').ATNState;
+  
+  function recurseATN(cy, startState, inBlock){
+     for(var outterIndex in startState.transitions){
+        var transition=startState.transitions[outterIndex];
+              console.log(transition);
+              //if(transition.stateType===ATNState.RULE_START) return;
+                    var shape=  'ellipse';
+                    var edgeId=cy.edges().length+1;
+                    if(edgeId>=80)return;
+                    if(transition.target.stateType===ATNState.STAR_BLOCK_START)inBlock=true;
+              /*cy.add({
+                  group: "nodes",
+                  data: { id: startState.stateNumber.toString(), name: startState.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+              });*/
+                  console.log(transition.target.transitions.length);
+                  if(inBlock && transition.target.stateType===ATNState.RULE_START){
+                  for(var innerIndex in transition.target.transitions[0].target.transitions){
+                    var innerTransition=transition.target.transitions[0].target.transitions[innerIndex];
+                    cy.add({
+                        group: "nodes",
+                        data: { id: "1346", name: "1346", faveColor: "blue", faveShape: shape }
+                    });
+                     cy.add({
+                        group: "edges",
+                        data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: "1346", name: velvet.parser.ruleNames[innerTransition.target.ruleIndex] }
+                    });
+                    break;
+                  }
+                    return;
+                  }
+              if(transition.isEpsilon){
+                  //console.log(rule+" recurse p names: "+parser.ruleNames[rule]+" "+parser._interp.atn.ruleToStartState[rule]+" ε "+transition.target.stateNumber+" "+parser._interp.atn.ruleToStopState[rule]);
+                    cy.add({
+                        group: "nodes",
+                        data: { id: transition.target.stateNumber.toString(), name: transition.target.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+                    });
+                    console.log(startState.stateNumber.toString()+" er "+transition.target.stateNumber.toString());
+                    cy.add({
+                        group: "edges",
+                        data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: transition.target.stateNumber.toString(), name: (transition.isEpsilon) ? "ε": velvet.parser.literalNames[transition.label_] }
+                    });
+                    edgeId=cy.edges().length+1;
+                  for(var innerIndex in transition.target.transitions){
+                    var innerTransition=transition.target.transitions[innerIndex];
+                      console.log(innerTransition);
+                      console.log(inBlock+" "+innerTransition.target.stateNumber+" stateType "+innerTransition.target.stateType+" "+ATNState.RULE_START);
+                      if(inBlock && innerTransition.target.stateType===ATNState.RULE_START)continue;
+                    /*if(innerTransition.isEpsilon){
+                      console.log("\tε");
+                    }else{
+                      if(innerTransition.label!=null){
+                        console.log("\t"+parser.literalNames[innerTransition.label_]+" "+innerTransition.target.stateNumber);
+                      }else 
+                      console.log("\t"+innerTransition.target.stateNumber);
+                    }*/
+                    console.log(transition.target.stateNumber.toString()+" i er "+innerTransition.target.stateNumber.toString());
+                    cy.add({
+                        group: "nodes",
+                        data: { id: innerTransition.target.stateNumber.toString(), name: innerTransition.target.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+                    });
+                    
+                    cy.add({
+                        group: "edges",
+                        data: { id: "e"+edgeId.toString(), source: transition.target.stateNumber.toString(), target: innerTransition.target.stateNumber.toString(), name: (innerTransition.isEpsilon) ? "ε": velvet.parser.literalNames[innerTransition.label_] }
+                    });
+                    if(innerTransition.isEpsilon && innerTransition.target.stateType!=ATNState.RULE_START)recurseATN(cy, innerTransition.target, inBlock);
+                    edgeId=cy.edges().length+1;
+                  }
+                }else{
+                  console.log(startState.stateNumber.toString()+" r "+transition.target.stateNumber.toString());
+                  if(inBlock && transition.target.stateType===ATNState.RULE_START)return;
+                  cy.add({
+                      group: "nodes",
+                      data: { id: transition.target.stateNumber.toString(), name: transition.target.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+                  });
+                  cy.add({
+                      group: "edges",
+                      data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: transition.target.stateNumber.toString(), name: velvet.parser.literalNames[transition.label_] }
+                  });
+                  //console.log(rule+" p names: "+parser.ruleNames[rule]+" "+parser._interp.atn.ruleToStartState[rule]+" &epsilon; "+transition.target.stateNumber+" "+parser._interp.atn.ruleToStopState[rule]);
+                  recurseATN(cy, transition.target, inBlock);
+                  edgeId=cy.edges().length+1;
+                }
+     }
+  }
   
   function viewStylish(e, tokens, lexer, parser, tree){
     var canvas = document.getElementById('canvasEditor');
@@ -27,7 +117,7 @@
     });
 
     //autocomplete(document.getElementById("g4Input"), velvet.autoList);
-    var xhr = new XMLHttpRequest(); 
+    /*Svar xhr = new XMLHttpRequest(); 
     xhr.open('GET', "/scad/SCADLexer.tokens", true); 
     //xhr.responseType = "blob";
     xhr.onload = function() {
@@ -39,8 +129,193 @@
 
       }
     };
-    xhr.send(null);
+    xhr.send(null);*/
+        var atnGraph = document.createElement('div');
+        //var atnGraph = document.getElementById('graph');
+        atnGraph.id = "graph";
+        atnGraph.style.width = '1200px';
+        atnGraph.style.height =  '1500px';
+        atnGraph.tabIndex = '3';
+        atnGraph.style.backgroundColor = '#0FFFF';
+        //atnGraph.style.color = '#000';
+        //atnGraph.style.zIndex = '2';
+        //atnGraph.style.animation = 'blinker 1s linear infinite';
+        atnGraph.style.left = '10px';
+        atnGraph.style.top = '8px';
+        //atnGraph.style.marginTop ='200px';
+        //atnGraph.style.marginTop = (-(10+velvet.rows*18/2))+'px';
+        atnGraph.style.borderColor = "blue";
+        var content = document.createTextNode("<YOUR_CONTENT>");
+//atnGraph.appendChild(content);
+    canvas.parentElement.appendChild(atnGraph);
+    var cy = cytoscape({
+      container: atnGraph // container to render in
+      ,
+          style: cytoscape.stylesheet()
+    .selector('node')
+      .css({
+          'width' : '15',
+          'height' : '15',
+          'shape': 'data(faveShape)',
+        'content': 'data(name)',
+        'line-color': 'data(faveColor)'
+      })
+    .selector('edge')
+      .css({
+        'content': 'data(name)',
+        'width': 2,
+        'line-color': '#ddd'
+      })
+    .selector('.highlighted')
+      .css({
+        'background-color': '#61bffc',
+        'line-color': '#61bffc',
+        'target-arrow-color': '#61bffc',
+        'transition-property': 'background-color, line-color, target-arrow-color',
+        'transition-duration': '0.5s'
+      }),
+          hideLabelsOnViewport: false,
+          ready: function(){ console.log('ready') }
 
+    });
+    var rule=99;
+              var startState=parser._interp.atn.ruleToStartState[rule];
+              console.log(startState);
+              console.log(startState.stateNumber.toString());
+                    var shape=  'ellipse';
+              cy.add({
+                  group: "nodes",
+                  data: { id: startState.stateNumber.toString(), name: startState.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+              });
+              var stopState=parser._interp.atn.ruleToStopState[rule];
+              cy.add({
+                  group: "nodes",
+                  data: { id: stopState.stateNumber.toString(), name: stopState.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+              });
+              //recurseATN(cy, startState, false);
+              var transition=startState.transitions[0];
+              console.log(transition);
+              var edgeId=1;
+              if(transition.isEpsilon){
+                  console.log(rule+" p names: "+parser.ruleNames[rule]+" "+parser._interp.atn.ruleToStartState[rule]+" ε "+transition.target.stateNumber+" "+parser._interp.atn.ruleToStopState[rule]);
+                  console.log(transition.target.transitions.length);
+                    cy.add({
+                        group: "nodes",
+                        data: { id: transition.target.stateNumber.toString(), name: transition.target.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+                    });
+                    cy.add({
+                        group: "edges",
+                        data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: transition.target.stateNumber.toString(), name: (transition.isEpsilon) ? "ε": velvet.parser.literalNames[transition.label_] }
+                    });
+                    edgeId++;
+                  for(var innerIndex in transition.target.transitions){
+                    var innerTransition=transition.target.transitions[innerIndex];
+                      console.log(innerTransition);
+                      console.log("stateType "+innerTransition.target.stateType);
+                    if(innerTransition.isEpsilon){
+                      console.log("\tε");
+                    }else{
+                      if(innerTransition.label!=null){
+                        console.log("\t"+parser.literalNames[innerTransition.label_]+" "+innerTransition.target.stateNumber);
+                      }else 
+                      console.log("\t"+innerTransition.target.stateNumber);
+                    }
+                    cy.add({
+                        group: "nodes",
+                        data: { id: innerTransition.target.stateNumber.toString(), name: innerTransition.target.stateNumber.toString(), faveColor: "blue", faveShape: shape }
+                    });
+                    cy.add({
+                        group: "edges",
+                        data: { id: "e"+edgeId.toString(), source: transition.target.stateNumber.toString(), target: innerTransition.target.stateNumber.toString(), name: (innerTransition.isEpsilon) ? "ε": velvet.parser.literalNames[innerTransition.label_] }
+                    });
+                    recurseATN(cy, innerTransition.target, false);
+                    edgeId++;
+                  }
+                }else{
+                  /*cy.add({
+                      group: "nodes",
+                      data: { id: transition.target.stateNumber, label: transition.target.stateNumber }
+                  });
+                  cy.add({
+                      group: "edges",
+                      data: { id: transition.target.stateNumber, source: startState, target: transition.target.stateNumber, label: transition.target.stateNumber }
+                  });*/
+                  console.log(rule+" p names: "+parser.ruleNames[rule]+" "+parser._interp.atn.ruleToStartState[rule]+" &epsilon; "+transition.target.stateNumber+" "+parser._interp.atn.ruleToStopState[rule]);
+                }
+                cy.resize();
+var options = {
+  name: 'breadthfirst',
+
+  fit: true, // whether to fit the viewport to the graph
+  directed: false, // whether the tree is directed downwards (or edges can point in any direction if false)
+  padding: 30, // padding on fit
+  circle: false, // put depths in concentric circles if true, put depths top down if false
+  spacingFactor: 1.75, // positive spacing factor, larger => more space between nodes (N.B. n/a if causes overlap)
+  boundingBox: undefined, // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
+  avoidOverlap: true, // prevents node overlap, may overflow boundingBox if not enough space
+  nodeDimensionsIncludeLabels: false, // Excludes the label when calculating node bounding boxes for the layout algorithm
+  roots: undefined, // the roots of the trees
+  maximalAdjustments: 0, // how many times to try to position the nodes in a maximal way (i.e. no backtracking)
+  animate: false, // whether to transition the node positions
+  animationDuration: 500, // duration of animation in ms if enabled
+  animationEasing: undefined, // easing of animation if enabled,
+  animateFilter: function ( node, i ){ return true; }, // a function that determines whether the node should be animated.  All nodes animated by default on animate enabled.  Non-animated nodes are positioned immediately when the layout starts
+  ready: undefined, // callback on layoutready
+  stop: undefined, // callback on layoutstop
+  transform: function (node, position ){ return position; } // transform a given node position. Useful for changing flow direction in discrete layouts
+};
+var layout = cy.elements().layout( {
+  name: 'cose-bilkent',
+  // Called on `layoutready`
+  ready: function () {
+  },
+  // Called on `layoutstop`
+  stop: function () {
+  },
+  boundingBox: undefined,
+  // Whether to include labels in node dimensions. Useful for avoiding label overlap
+  nodeDimensionsIncludeLabels: false,
+  // number of ticks per frame; higher is faster but more jerky
+  refresh: 30,
+  // Whether to fit the network view after when done
+  fit: true,
+  // Padding on fit
+  padding: 10,
+  // Whether to enable incremental mode
+  randomize: true,
+  // Node repulsion (non overlapping) multiplier
+  nodeRepulsion: 4500,
+  // Ideal (intra-graph) edge length
+  idealEdgeLength: 50,
+  // Divisor to compute edge forces
+  edgeElasticity: 0.45,
+  // Nesting factor (multiplier) to compute ideal edge length for inter-graph edges
+  nestingFactor: 0.1,
+  // Gravity force (constant)
+  gravity: 0.25,
+  // Maximum number of iterations to perform
+  numIter: 2500,
+  // Whether to tile disconnected nodes
+  tile: true,
+  // Type of layout animation. The option set is {'during', 'end', false}
+  animate: 'end',
+  // Amount of vertical space to put between degree zero nodes during tiling (can also be a function)
+  tilingPaddingVertical: 10,
+  // Amount of horizontal space to put between degree zero nodes during tiling (can also be a function)
+  tilingPaddingHorizontal: 10,
+  // Gravity range (constant) for compounds
+  gravityRangeCompound: 1.5,
+  // Gravity force (constant) for compounds
+  gravityCompound: 1.0,
+  // Gravity range (constant)
+  gravityRange: 3.8,
+  // Initial cooling factor for incremental layout
+  initialEnergyOnIncremental: 0.5
+} );
+layout.run();
+//document.getElementById('canvasEditor').style.display = "none";
+//document.getElementById('cursor').style.display = "none";
+cy.center();
   }
   
   </script>
