@@ -24,26 +24,55 @@ var ATNState = require('antlr4/atn/ATNState').ATNState;
         if(inBlock){
           var id="";
           for(var innerIndex in transition.target.stopState.transitions){
-          if(transition.target.stopState.transitions[innerIndex].target.stateType===ATNState.BLOCK_END &&
-                  transition.target.stopState.transitions[innerIndex].target.ruleIndex===rule){
-            id=transition.target.stopState.transitions[innerIndex].target.stateNumber.toString();
-            break;
-          }
+            if(transition.target.stopState.transitions[innerIndex].target.stateType===ATNState.BLOCK_END &&
+                    transition.target.stopState.transitions[innerIndex].target.ruleIndex===rule){
+              id=transition.target.stopState.transitions[innerIndex].target.stateNumber.toString();
+              break;
+            }
           }
           if(id.length>0){
-          if(cy.getElementById(id).length===0)
-          cy.add({
-              group: "nodes",
-              data: { id: id, name: id, faveColor: "blue", faveShape: 'ellipse' }
-          });
-           cy.add({
-              group: "edges",
-              data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: id, name: velvet.parser.ruleNames[transition.target.ruleIndex] }
-          });
+            if(cy.getElementById(id).length===0)
+            cy.add({
+                group: "nodes",
+                data: { id: id, name: id, faveColor: "blue", faveShape: 'ellipse' }
+            });
+             cy.add({
+                group: "edges",
+                data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: id, name: velvet.parser.ruleNames[transition.target.ruleIndex] }
+            });
           }
           else{
-          console.log(transition.target.stopState.transitions[innerIndex]);
-          recurseATN(rule, cy, transition.target, transition.target.transitions[0], inBlock);
+          console.log(startState.stateNumber+" else"+transition.target.stateNumber);
+          console.log("else trstartState");
+          console.log(startState);
+          if(transition.followState.stateType===ATNState.BASIC &&
+                    transition.followState.ruleIndex===rule){
+            if(cy.getElementById(transition.followState.stateNumber.toString()).length===0)
+            cy.add({
+                group: "nodes",
+                data: { id: transition.followState.stateNumber.toString(), name: transition.followState.stateNumber.toString(), faveColor: "blue", faveShape: 'ellipse' }
+            });
+             cy.add({
+                group: "edges",
+                data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: transition.followState.stateNumber.toString(), name: velvet.parser.ruleNames[transition.ruleIndex] }
+            });
+            recurseATN(rule, cy, transition.followState, transition.followState.transitions[0], inBlock);
+          }
+          else{
+            /*if(cy.getElementById(transition.target.stateNumber.toString()).length===0)
+            cy.add({
+                group: "nodes",
+                data: { id: transition.target.stateNumber.toString(), name: transition.target.stateNumber.toString(), faveColor: "blue", faveShape: 'ellipse' }
+            });
+            cy.add({
+                group: "edges",
+                data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: transition.target.stateNumber.toString(), name: velvet.parser.literalNames[transition.label_] }
+            });
+            console.log("transition.target");
+            //console.log(transition.target);
+            recurseATN(rule, cy, transition.target, transition.target.transitions[0], false);
+            */
+          }
           }
         }
         else{
@@ -56,6 +85,8 @@ var ATNState = require('antlr4/atn/ATNState').ATNState;
               group: "edges",
               data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: transition.target.stateNumber.toString(), name: velvet.parser.literalNames[transition.label_] }
           });
+          console.log("transition.target");
+          console.log(transition.target);
           recurseATN(rule, cy, transition.target, transition.target.transitions[0], false);
           
         }
@@ -63,7 +94,6 @@ var ATNState = require('antlr4/atn/ATNState').ATNState;
         case ATNState.STAR_LOOP_BACK:
         case ATNState.PLUS_LOOP_BACK:
           console.log(startState.stateType+" LOOP_BACK "+transition.target.stateType);
-        case ATNState.RULE_STOP:
         if(cy.getElementById(transition.target.stateNumber.toString()).length===0)
         cy.add({
             group: "nodes",
@@ -84,6 +114,17 @@ var ATNState = require('antlr4/atn/ATNState').ATNState;
             data: { id: "e"+edgeId.toString(), source: transition.target.stateNumber.toString(), target: transition.target.transitions[0].target.stateNumber.toString(), name: (transition.target.transitions[0].isEpsilon) ? "ε": velvet.parser.literalNames[transition.target.transitions[0].label_] }
         });
           break;
+        case ATNState.RULE_STOP:
+        if(cy.getElementById(transition.target.stateNumber.toString()).length===0)
+        cy.add({
+            group: "nodes",
+            data: { id: transition.target.stateNumber.toString(), name: transition.target.stateNumber.toString(), faveColor: "blue", faveShape: 'ellipse' }
+        });
+        cy.add({
+            group: "edges",
+            data: { id: "e"+edgeId.toString(), source: startState.stateNumber.toString(), target: transition.target.stateNumber.toString(), name: (transition.isEpsilon) ? "ε": velvet.parser.literalNames[transition.label_] }
+        });
+        break;
       case ATNState.PLUS_BLOCK_START:
       case ATNState.STAR_BLOCK_START:
         if(cy.getElementById(transition.target.stateNumber.toString()).length===0)
