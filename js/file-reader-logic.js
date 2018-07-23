@@ -7,9 +7,10 @@ var scad = require('scad/index');
     // files is a FileList of File objects. List some properties.
     var output = [];
     for (var i = 0, f; f = files[i]; i++) {
+      const date = new Date(f.lastModified);
       output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
                   f.size, ' bytes, last modified: ',
-                  f.lastModified ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+                  f.lastModified ? date.toLocaleDateString() : 'n/a',
                   '</li>');
            //Initialize the FileReader object to read the scad file
             var fileReader = new FileReader();

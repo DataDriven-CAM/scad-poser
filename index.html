@@ -5,6 +5,7 @@
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SCAD editor created with ANTLR4</title>
   <link rel="stylesheet" type="text/css" href="css/velvet.css">
+  <link rel="stylesheet" type="text/css" href="css/atn-graph.css">
 
   <script src="require.js"></script>
   <script src="js/velvet.js"></script>
@@ -38,7 +39,7 @@ var ATNState = require('antlr4/atn/ATNState').ATNState;
     });
 
     //autocomplete(document.getElementById("g4Input"), velvet.autoList);
-    /*Svar xhr = new XMLHttpRequest(); 
+    /*var xhr = new XMLHttpRequest(); 
     xhr.open('GET', "/scad/SCADLexer.tokens", true); 
     //xhr.responseType = "blob";
     xhr.onload = function() {
