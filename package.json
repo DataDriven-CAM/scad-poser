@@ -17,9 +17,9 @@
   },
   "homepage": "https://github.com/DataDriven-CAM/scad-poser#readme",
   "devDependencies": {
-    "gulp": "^4.0.0-alpha.3",
+    "gulp": "^4.0.0",
     "gulp-concat": "^2.6.1",
-    "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^3.0.0"
+    "gulp-rename": "^1.4.0",
+    "gulp-uglify": "^3.0.1"
   }
 }

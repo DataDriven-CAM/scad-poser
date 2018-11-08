@@ -4,6 +4,12 @@
   <meta charset="utf-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SCAD editor created with ANTLR4</title>
+  <link rel="stylesheet" type="text/css" href="js/jstree/themes/default/style.min.css" />
+  <link rel="stylesheet" href="css/dragbar.css"/>
+  <link rel="stylesheet" href="css/editing.css"/>
+  <link rel="stylesheet" href="css/layout.css"/>
+  <link rel="stylesheet" href="css/menu.css"/>
+  <link rel="stylesheet" href="css/drawer.css"/>
   <link rel="stylesheet" type="text/css" href="css/velvet.css">
   <link rel="stylesheet" type="text/css" href="css/atn-graph.css">
 
@@ -14,15 +20,35 @@
   <script src="https://unpkg.com/dagre@0.7.4/dist/dagre.js"></script>
   <script src="js/lib/cytoscape-dagre.js"></script>
   <script src="js/atn-graph.js"></script>
+  <script type="text/javascript" src="js/bundle.umd.min.js"></script>
+  <script type="text/javascript" src="js/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="js/jstree/jstree.min.js"></script>
+  <script type="text/javascript" src="js/solid-fs.js"></script>
+  <script src="https://solid.github.io/releases/rdflib.js/rdflib-0.12.2.min.js"></script>
+  <script type="text/javascript" src="js/solid-auth-client.bundle.js"></script>
+  <script type="text/javascript" src="js/Drawer.js"></script>
+  <script type="text/javascript" src="js/Tabs.js"></script>
+  <script type="text/javascript" src="js/Menu.js"></script>
 <script type="application/javascript">
 var antlr4 = require('antlr4/index');
 var ATNState = require('antlr4/atn/ATNState').ATNState;
   
   function viewStylish(e, tokens, lexer, parser, tree){
-    var canvas = document.getElementById('canvasEditor');
+    var font = new pmc.Font('16px serif');
+    var canvas = document.createElement("canvas");
+    var container = document.getElementById("container");
+    canvas.setAttribute("id", 'canvasEditor');
+    canvas.setAttribute("tabindex", 1);
     var lines=tokens.tokens[0].source[1].strdata.split("\n");
-    canvas.height=100+lines.length*16;
-    velvet = new pmc.Velvet(canvas, tokens, lexer, parser, tree);
+    canvas.width=1400;
+    var ctx = canvas.getContext('2d');
+    ctx.font = font.getFont();
+    canvas.height=100+lines.length*font.extractFontSize(ctx.font);
+    //canvas.setAttribute("width", getComputedStyle(canvas).getPropertyValue('width').slice(0,-2)*2*window.devicePixelRatio);
+    //canvas.setAttribute("height", getComputedStyle(canvas).getPropertyValue('height').slice(0,-2)*2*window.devicePixelRatio);
+    container.appendChild(canvas);
+    velvet = new pmc.Velvet(canvas, font, tokens, lexer, parser, tree);
     velvet.addKeyListener((event) => {
       console.log(event.key);
       const fileStream = streamSaver.createWriteStream('filename.scad')
@@ -57,21 +83,186 @@ var ATNState = require('antlr4/atn/ATNState').ATNState;
   }
   
   </script>
+  <script type="text/javascript" src="js/AntlrParserListener.js"></script>
 </head>
 <body>
-  <div>
-    <div id="info" style="width: 400px; float: left;">
-      <input type="file" id="files" name="files[]" multiple />
-      <output id="list"></output>
+  <div width="100%" id="drawertab">
+     <canvas id="drawertabcanvas" width="300" height="10"></canvas>
+     <script type="text/javascript">
+  function dropMenu(event){
+    if(event.clientY<35 && event.clientX<130){
+      var drawer = new Drawer();
+      drawer.slideOut();
+      document.getElementById("defaultOpen"+"Menu").click();
+    }
+  }
+  
+  function pickupMenu(event){
+      var drawer = new Drawer();
+      drawer.slideBack();
+  }
+      var c = document.getElementById("drawertabcanvas");
+      c.addEventListener("mousemove", dropMenu, false);
+      var ctx = c.getContext("2d");
+      var h = c.height-1;
+      ctx.moveTo(0, h);
+      ctx.lineTo(100, h);
+      ctx.bezierCurveTo(170, h, 110, -1, 200, -1);
+      ctx.stroke(); 
+     </script>
+  </div>
+  <div id="sidebar">
+      <span id="position"></span>
+      <div id="dragbar"></div>
+      <div id="fstree">
+  <div id="info" style="width: 400px; float: left;">
+    <input type="file" id="files" name="files[]" multiple />
+    <output id="list"></output>
+  </div>
+      </div>
+ </div>
+  <div id="main"  width="100%" height="100%">
+    <div class="tab" id="edittab"></div>
+    <!-- Tab content -->
+    <div id="edit1" class="editcontent">
+      <div id="container" style="width:100%;height:700px;" contentEditable>
+        <!--canvas id="canvasEditor" tabindex="1" style="height:700px;"/-->
+      </div>
     </div>
-  </div>
-  <div id="container" width="100%" height="100%" style="clear:both;">
-  <div id="plate">
-    <canvas id="canvasEditor" width="1200" height="500" tabindex="1"/>
-  </div>
-    <footer id="foot"></footer>
-  </div>
+<script type="text/javascript" >
+
+     var edittabs=new Tabs(document.getElementById("edittab"), "editcontent");
+     edittabs.append("primary-disk.scad", "edit1");
+
+</script>
 
   <script src="js/file-reader-logic.js" type="text/javascript" charset="utf-8"></script>
+<div class="tab" id="outputtab"></div>
+
+<!-- Tab content -->
+<div id="Output" class="tabcontent">
+  <label class="textarea-label">
+  <textarea id="outputarea" name="" class="output-pane" readonly></textarea>
+  </label>
+</div>
+
+<div id="Searchresults" class="tabcontent">
+  <textarea name="" class="output-pane" readonly></textarea>
+</div>
+
+<div id="Git" class="tabcontent">
+  <textarea name="" class="output-pane" readonly></textarea>
+</div> 
+    <footer id="foot"></footer>
+<script type="text/javascript">
+     var tabs=new Tabs(document.getElementById("outputtab"), "tabcontent");
+     tabs.append("Output", "Output");
+     tabs.append("Search results", "Searchresults");
+     tabs.append("Git", "Git");
+
+
+document.getElementById("defaultOpen"+"Output").click();
+document.getElementById("defaultOpen"+"edit1").click();
+
+</script>
+      </div>
+  <script type="text/javascript" src="js/Dragbar.js" ></script>
+<div class="drawer" id="drawer" onmouseleave="pickupMenu(event)">
+  <div class="drawer__content">
+<div class="tab" id="menutab"></div>
+<div id="Menu" class="menucontent">
+<nav class="dropdownmenu"  id="dropdownmenu"></nav>    
+</div>
+
+<div id="Repos" class="menucontent">
+    <input type="text" class="repository-interface" name="repository" value="https://github.com/DataDriven-CAM/cam-io.git" oninput="changeRepository(this.value)"/>
+</div>
+<script type="text/javascript" >
+var menu = new Menu(document.getElementById("dropdownmenu"));
+menu.append("File");
+menu.append("Find");
+menu.append("Edit");
+menu.append("Generate");
+menu.append("Windows");
+menu.append("Edit", "Cut");
+menu.append("Edit", "Copy");
+menu.append("Edit", "Paste");
+
+function changeRepository(value){
+  if(value.endsWith(".git")){
+    var info = git.getRemoteInfo({
+      corsProxy: 'https://cors.isomorphic-git.org',
+  url: value
+}).then((response) => {
+  console.log(response);
+  $(".repository-interface").css("border-color","green");
+  $(".repository-interface").css("box-shadow", "0 0 10px green");
+  $(".repository-interface").blur();
+}).catch((error) => {
+  console.log('Error: '+JSON.stringify(error));
+  $(".repository-interface").css("border-color","tomato");
+  $(".repository-interface").css("box-shadow", "0 0 10px tomato");
+  $(".repository-interface").blur();
+});
+
+/*git.clone({
+    dir,
+    corsProxy: 'https://cors.isomorphic-git.org',
+    url: 'https://github.com/DataDriven-CAM/scad-poser.git',
+    ref: 'master',
+    singleBranch: true,
+    depth: 3
+}, ()=>{
+var treeObj = {'core': {
+      'data' : [
+        { "text" : "solid-git", "state" : {"opened" : true }, "children" : []}]}};
+//for(var entry in v){
+//  treeObj.core.data[0].children.push({"text": v[entry]});
+////  console.log(v[entry]);
+//}
+//console.log(JSON.stringify(treeObj));
+$(function() {
+  $('#fstree').jstree( treeObj);
+});
+  
+});*/
+    
+  }
+}
+
+     var menutabs=new Tabs(document.getElementById("menutab"), "menucontent");
+     menutabs.append("Menu", "Menu");
+     menutabs.append("Repo's", "Repos");
+
+
+const FOAF = $rdf.Namespace('http://xmlns.com/foaf/0.1/');
+async function login(idp) {
+  const session = await solid.auth.currentSession();
+  if (!session)
+    await solid.auth.login(idp);
+  else
+    console.log(`Logged in as ${session.webId}`);
+    
+  // Set up a local data store and associated data fetcher
+  const store = $rdf.graph();
+  const fetcher = new $rdf.Fetcher(store);
+
+  // Load the person's data into the store
+  const person = `${session.webId}`;//$('#profile').val();
+  await fetcher.load(person);
+
+  // Display their details
+  const fullName = store.any($rdf.sym(person), FOAF('name'));
+  //document.getElementById("fullName").value=fullName && fullName.value;
+  window.fs = new SolidFileSystem(session.webId, $rdf);
+  // Initialize isomorphic-git with our new file system
+  git.plugins.set('fs', window.fs);
+}
+login('https://roger.localhost:8443/');        
+
+</script>
+
+  </div>
+  </div>
 </body>
 </html>

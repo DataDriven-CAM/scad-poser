@@ -14,21 +14,25 @@ var scad = require('scad/index');
                   '</li>');
            //Initialize the FileReader object to read the scad file
             var fileReader = new FileReader();
+        let promise = new Promise((resolve, reject)=>{
             fileReader.onload = function (e) {
+                var worker = new Worker("AntlrWorker.js");
                 
-                //document.getElementById('exampleEditor').innerText =fileReader.result;
-                localStorage.setItem( 'memoriesdata',  fileReader.result );
-                //console.log(localStorage.getItem('memoriesdata'));
-                var stream = antlr4.CharStreams.fromString(localStorage.getItem('memoriesdata'));
-                var lexer = new scad.SCADLexer.SCADLexer(stream);
-                var tokens = new antlr4.CommonTokenStream(lexer);
+            var stream = antlr4.CharStreams.fromString(fileReader.result);
+            var lexer = new scad.SCADLexer.SCADLexer(stream);
+            var tokens = new antlr4.CommonTokenStream(lexer);
             var parser = new scad.SCADParser.SCADParser(tokens);
             parser.buildParseTrees = true;
-            
+            var listener=new pmc.AntlrParserListener(parser);
+            parser.addParseListener(listener);
             var tree = parser.scad();
                 viewStylish(evt, tokens, lexer, parser, tree);
+                resolve("completed.");
             }
             fileReader.readAsText(f);
+        }).then((result)=>{
+          console.log(result);}, (err)=>{console.log('err: '+err);
+        });
     }
     document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
   }

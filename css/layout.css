@@ -1,0 +1,106 @@
+ /* Style the tab */
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab .tablinks {
+    position: relative;
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 3;
+}
+
+.tabtext {
+    position: absolute;
+    text-align: center;
+    z-index: 3;
+    
+}
+.tabtab {
+    position: absolute;
+    z-index: 4;
+    
+}
+.tabcontent editcontent menucontent {
+    font: inherit;
+  -moz-box-sizing:border-box;
+  -webkit-box-sizing:border-box;
+  box-sizing:border-box;
+  width:100%;
+}
+
+/* Change background color of buttons on hover */
+.tab .tablinks:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab .tablinks.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent, .menucontent, .editcontent {
+    display: none;
+    border: 1px solid #ccc;
+    border-top: none;
+    animation: fadeEffect 1s; /* Fading effect takes 1 second */
+}
+
+/* Go from zero to full opacity */
+@keyframes fadeEffect {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+.textarea-label
+{
+  display: block;
+  /* border, padding, and other styles go here,
+  don't set the height, and don't use floats or positioning */
+    position: relative;
+    width: 100%;
+    top: 0;
+    bottom: 0;
+  -moz-box-sizing:border-box;
+  -webkit-box-sizing:border-box;
+  box-sizing:border-box;
+  width:100%;
+  overflow-y:auto;
+  max-height:100px;
+}
+
+.output-pane {
+  border: 0 none;
+  margin: 0;
+  outline: 0 none;
+  padding: 0;
+    width: 100%;
+  -moz-box-sizing:border-box;
+  -webkit-box-sizing:border-box;
+  box-sizing:border-box;
+  resize: none;
+}
+
+.repository-interface {
+    float:right;
+    width:600px;
+    border:2px solid tomato;
+    border-radius:7px;
+    font-size:20px;
+    padding:5px;
+    margin-top:-10px;    
+}
+
+.repository-interface:focus { 
+    outline:none;
+    border-color:tomato;
+    box-shadow:0 0 10px #9ecaed;
+}
