@@ -176,11 +176,7 @@ document.getElementById("defaultOpen"+"edit1").click();
 
 <div id="Repos" class="menucontent">
     <input type="text" class="repository-interface" name="repository" value="https://github.com/DataDriven-CAM/cam-io.git" oninput="changeRepository(this.value)"/>
-     <select name="cars">
-  <option value="volvo">Volvo</option>
-  <option value="saab">Saab</option>
-  <option value="fiat">Fiat</option>
-  <option value="audi">Audi</option>
+     <select id="branches">
 </select> 
 </div>
 
@@ -234,6 +230,17 @@ function changeRepository(value){
   $(".repository-interface").css("border-color","green");
   $(".repository-interface").css("box-shadow", "0 0 10px green");
   $(".repository-interface").blur();
+  var branches = document.getElementById("branches");
+  
+  while (branches.hasChildNodes()) {
+    branches.removeChild(branches.lastChild);
+  }
+  for (var p in response.refs.heads) {
+    var branch = document.createElement("option");
+    branch.appendChild(document.createTextNode(p));
+    branches.appendChild(branch);
+  }
+
 }).catch((error) => {
   console.log('Error: '+JSON.stringify(error));
   $(".repository-interface").css("border-color","tomato");
