@@ -55,7 +55,7 @@
   border: 0 none;
   left: 3px;
   bottom: 3px;
-  top: -100%;
+  top: -110%;
   height: calc(100% - 70%);
   z-index: 8;
 }

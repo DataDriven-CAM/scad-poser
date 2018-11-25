@@ -9,19 +9,25 @@ ATNGraph = class ATHPGraph{
       var canvas = document.getElementById('canvasEditor');
         var atnGraph = document.createElement('div');
         //var atnGraph = document.getElementById('graph');
-        atnGraph.id = "graph";
-        atnGraph.style.width = '1200px';
-        atnGraph.style.height =  '1500px';
+        atnGraph.id = "atngraph";
+        atnGraph.style.width = canvas.parentElement.style.width;
+        atnGraph.style.height =  canvas.parentElement.style.height;
         atnGraph.tabIndex = '3';
-        atnGraph.style.backgroundColor = '#0FFFF';
+    //atnGraph.setAttribute("background-color", "rgba(255,255,255,1.0)");
+    //atnGraph.setAttribute("background", "rgba(255,255,255,0.0)");
+        //atnGraph.style.backgroundColor = '#0FFFF';
         //atnGraph.style.color = '#000';
+        atnGraph.position = 'absolute';
+        atnGraph.zIndex = '8';
         //atnGraph.style.zIndex = '2';
         //atnGraph.style.animation = 'blinker 1s linear infinite';
         atnGraph.style.left = '10px';
         atnGraph.style.top = '8px';
         //atnGraph.style.marginTop ='200px';
         //atnGraph.style.marginTop = (-(10+velvet.rows*18/2))+'px';
-        atnGraph.style.borderColor = "blue";
+        //atnGraph.style.borderColor = "blue";
+        atnGraph.contentEditable;
+        //atnGraph.opacity = 0.2;
         var content = document.createTextNode("<YOUR_CONTENT>");
 //atnGraph.appendChild(content);
       canvas.parentElement.appendChild(atnGraph);
@@ -32,17 +38,19 @@ ATNGraph = class ATHPGraph{
           style: cytoscape.stylesheet()
     .selector('node')
       .css({
-          'width' : '30',
-          'height' : '30',
+          'width' : '10',
+          'height' : '10',
           'shape': 'data(faveShape)',
         'content': 'data(name)',
-        'line-color': 'data(faveColor)'
+        'line-color': 'data(faveColor)',
+        'font-size' : '12'
       })
     .selector('edge')
       .css({
         'content': 'data(name)',
         'width': 2,
-        'line-color': '#ddd'
+        'line-color': '#ddd',
+        'font-size' : '24'
       })
     .selector('.highlighted')
       .css({
@@ -73,7 +81,7 @@ ATNGraph = class ATHPGraph{
                 cy.resize();
 
 var options ={
-  name: 'dagre',
+  name: 'atn',
 // dagre algo options, uses default value on undefined
   nodeSep: undefined, // the separation between adjacent nodes in the same rank
   edgeSep: undefined, // the separation between adjacent edges in the same rank

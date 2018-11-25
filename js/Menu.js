@@ -4,7 +4,10 @@ class Menu{
         
     }
     
-    append(name, subname){
+    append(name, sm, l){
+    	var subname = (typeof sm !== "function")? sm : {},
+        listener = (typeof sm !== "function")? l : sm;
+      
       var children = this.theNav.getElementsByTagName('ul');
       var theUl = (children.length>0) ? children[0] : document.createElement("ul");
       if(subname===undefined){
@@ -12,6 +15,7 @@ class Menu{
         var menuitem = document.createElement("input");
         menuitem.setAttribute("type", "submit");
         menuitem.setAttribute("value", name);
+        if(listener!=undefined)menuitem.addEventListener("click", listener);
         il.appendChild(menuitem);
         theUl.appendChild(il);
       }
@@ -24,6 +28,7 @@ class Menu{
             var menuitem = document.createElement("input");
             menuitem.setAttribute("type", "submit");
             menuitem.setAttribute("value", subname);
+	    menuitem.addEventListener("click", listener);
             il.appendChild(menuitem);
             ul.appendChild(il);
             if(subchildren.length===0){

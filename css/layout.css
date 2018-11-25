@@ -8,7 +8,6 @@
 /* Style the buttons that are used to open the tab content */
 .tab .tablinks {
     position: relative;
-    background-color: inherit;
     float: left;
     border: none;
     outline: none;

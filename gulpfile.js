@@ -11,6 +11,8 @@ var jsFiles = 'bower_components/antlr4/runtime/JavaScript/src/antlr4/**/*.js',
     velvetFile = '../velvet/Velvet.js',
     velvetFiles = '../velvet/**/*.js',
     cssFile = '../velvet/css/velvet.css',
+    atnFile = '../cytoscape-atn/layout.js',
+    atnFiles = '../cytoscape-atn/**/*.js',
     jsDest = 'js',
     cssDest = 'css',
     requireFile = 'bower_components/antlr4/runtime/JavaScript/src/lib/require.js',
@@ -49,6 +51,12 @@ gulp.task('cytoscape-copy', function(done) {
         .pipe(gulp.dest(jsDest));
 });
 
+gulp.task('cytoscape-atn-copy', function(done) {
+    return gulp.src([atnFile, atnFiles])
+        .pipe(concat('cytoscape-atn.js'))
+        .pipe(gulp.dest(jsDest));
+});
+
 gulp.task('jstree-copy', function(done) {
     return gulp.src(['bower_components/jstree/dist/**/*'])
         .pipe(gulp.dest(jsDest+'/jstree'));
@@ -70,10 +78,10 @@ gulp.task('solid-fs-copy', function(done) {
 });
 
 gulp.task('default', gulp.series('set-java-env', gulp.series('antlr4-symlink', gulp.series('velvet-copy',
-        gulp.series('velvet-css-copy', gulp.series('streamsaver-copy', gulp.series('cytoscape-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy','solid-fs-copy'))), (done) => {
+        gulp.series('velvet-css-copy', gulp.series('streamsaver-copy', gulp.series('cytoscape-copy', gulp.series('cytoscape-atn-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy','solid-fs-copy'))), (done) => {
   // place code for your default task here
   done();
-}))))))));
+})))))))));
 
 /*gulp.task('scripts', function(done) {
     return gulp.src(jsFiles)
