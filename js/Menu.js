@@ -5,7 +5,7 @@ class Menu{
     }
     
     append(name, sm, l){
-    	var subname = (typeof sm !== "function")? sm : {},
+    	var subname = (typeof sm !== "function")? sm : undefined,
         listener = (typeof sm !== "function")? l : sm;
       
       var children = this.theNav.getElementsByTagName('ul');
