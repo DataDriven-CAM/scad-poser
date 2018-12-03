@@ -27,6 +27,10 @@
     resize: vertical;
 }
 
+#fstree {
+    margin-top: 15px;
+}
+
 .jstree-node .ui-tooltip, .arrow:after {
     background: white;
     border: 2px solid lightskyblue;

@@ -31,6 +31,7 @@
   <script type="text/javascript" src="js/Tabs.js"></script>
   <script type="text/javascript" src="js/Menu.js"></script>
   <script type="text/javascript" src="js/Preferences.js"></script>
+  <script type="text/javascript" src="js/cnc/Generator.js"></script>
 <script type="application/javascript">
 var antlr4 = require('antlr4/index');
 var ATNState = require('antlr4/atn/ATNState').ATNState;
@@ -196,6 +197,7 @@ menu.append("Edit");
 menu.append("Generate", (event) => {
       var drawer = new Drawer();
       drawer.slideBack();
+      var generator = new pmc.cnc.Generator(velvet.getTree());
 });
 menu.append("Windows");
 menu.append("Edit", "Cut", (event) => {
@@ -297,7 +299,7 @@ async function login(idp) {
   // Display their details
   const fullName = store.any($rdf.sym(person), FOAF('name'));*/
   //document.getElementById("fullName").value=fullName && fullName.value;
-  window.fs = new SolidFileSystem(session.webId, "public/scad-poser");
+  window.fs = new SolidFileSystem(session.webId);
   // Initialize isomorphic-git with our new file system
   git.plugins.set('fs', window.fs);
   
@@ -312,6 +314,179 @@ async function login(idp) {
   });*/
 }
 login('https://roger.localhost:8443/');        
+
+$(function () {
+
+            var jsondata = [
+        { "text" : "solid-pod", "type":"folder", "state" : {"opened" : true }, "children" : []}];
+createFSTree(jsondata);
+        });
+function createFSTree(jsondata) {
+            $('#fstree').jstree({'core': {
+      'data' : jsondata,
+    'check_callback' : function(o, n, p, i, m) {
+            if(o === "delete_node") { return confirm("Are you sure you want to delete?"); }
+            if(m && m.dnd && m.pos !== 'i') { return false; }
+            if(o === "move_node" || o === "copy_node") {
+                    if(this.get_node(n).parent === this.get_node(p).id) { return false; }
+            }
+            return true;
+    }}, "plugins" : [ "contextmenu", "dnd", "types" ]
+      , "contextmenu" : {
+            "items" : function(node) {
+                    var tmp = $.jstree.defaults.contextmenu.items();
+                    delete tmp.create.action;
+                    tmp.create.label = "New";
+                    tmp.create.submenu = {
+                            "create_folder" : {
+                                    "separator_after"	: true,
+                                    "label"				: "Folder",
+                                    "action"			: function (data) {
+                                            var inst = $.jstree.reference(data.reference),
+                                                    obj = inst.get_node(data.reference);
+                                            inst.create_node(obj, { type : "default" }, "last", function (new_node) {
+                                                    setTimeout(function () { inst.edit(new_node); },0);
+                                            });
+							                                    }
+                            },
+                            "create_file" : {
+                                    "label"				: "File",
+                                    "action"			: function (data) {
+                                            var inst = $.jstree.reference(data.reference),
+                                                    obj = inst.get_node(data.reference);
+                                            inst.create_node(obj, { type : "file" }, "last", function (new_node) {
+                                                    setTimeout(function () { inst.edit(new_node); },0);
+                                            });
+                                    }
+                            }
+                    };
+                    if(this.get_type(node) != "folder") {
+                            delete tmp.create;
+                    }
+                    return tmp;
+            }
+    },
+        "types" : {
+      "default" : {
+        "icon" : "/img/text.gif"
+      },
+      "folder" : {
+        "icon" : "/img/folderclose.gif"
+      },
+      "image" : {
+        "icon" : "/img/image.gif"
+      },
+      "table" : {
+        "icon" : "/img/table.gif"
+      },
+      "packets" : {
+        "icon" : "/img/table.gif"
+      },
+      "text" : {
+        "icon" : "/img/text.gif"
+      },
+      "file" : {
+        "icon" : "/img/dataset.gif"
+      }
+    }
+              
+            });
+}
+  
+    
+  $('#fstree').on('delete_node.jstree', function (e, data) {
+                                    var branch = $('#fstree').jstree(true).get_path(data.node);
+                                    branch.shift();
+                                    var names=branch.join("/");
+//                                    $.post("/delete_node/"+encodeURIComponent(names), function(returnedData) {
+
+//                                    });
+				}).on('create_node.jstree', function (e, data) {
+                                    creating=true;
+				}).on('rename_node.jstree', function (e, data) {
+                                    var branch = $('#fstree').jstree(true).get_path(data.node);
+                                    //branch.shift();
+                                    var names=branch.join("/");
+                                    console.log("rename "+names);
+                                    if(creating){
+                                    window.fs.mkdir(names, (err)=>{
+                                        if(err!=null){
+                                        console.log(err);
+                                        }
+                                        else console.log("mkdir "+err);
+                                      });
+                                        $('#fstree').jstree(true).set_type(data.node, "folder");
+                                    }
+                                    else{
+                                        names+="["+data.old+"]";
+//                                    $.post("/rename_node/"+encodeURIComponent(names), function(returnedData) {
+
+//                                    });
+                                    }
+                                    creating=false;
+				})
+				.on('move_node.jstree', function (e, data) {
+                                    console.log(data.old_parent);
+                                    var branch = $('#fstree').jstree(true).get_path(data.node);
+                                    branch.shift();
+                                    var names=branch.join("/");
+                                    var old_branch = $('#fstree').jstree(true).get_path(data.old_parent);
+                                    old_branch.shift();
+                                    var old_names=old_branch.join("/");
+                                    console.log(old_names);
+//                                    $.post("/move_node/"+encodeURIComponent(names+"["+old_names+"]"), function(returnedData) {
+
+//                                    });
+				})
+				.on('cut_node.jstree', function (e, data) {
+                                    var branch = $('#fstree').jstree(true).get_path(data.node);
+                                    branch.shift();
+                                    var names=branch.join("/");
+                                    //$.post("/cut_node/"+encodeURIComponent(names), function(returnedData) {
+                                    //});
+                                    cutting=true;
+				})
+				.on('copy_node.jstree', function (e, data) {
+                                    var branch = $('#fstree').jstree(true).get_path(data.node);
+                                    branch.shift();
+                                    var names=branch.join("/");
+                                    console.log("hit copy node ");
+                                    var old_branch = $('#fstree').jstree(true).get_path(data.old_parent);
+                                    old_branch.shift();
+                                    var old_names=old_branch.join("/");
+                                    console.log(old_names);
+//                                    $.post("/copy_node/"+encodeURIComponent(names+"["+old_names+"]"), function(returnedData) {
+
+//                                    });
+                                      cutting=false;
+				}) // listen for event
+  .on('changed.jstree', function (e, data) {
+    var i, j, r = [];
+    for(i = 0, j = data.selected.length; i < j; i++) {
+      r.push(data.instance.get_node(data.selected[i]).text);
+    }
+    console.log(r);
+  });
+
+  function dropHandler(event, element) {
+   var selectedNode=$('#fstree').jstree(true).get_selected(true);
+   console.log("type "+$('#fstree').jstree(true).get_type(selectedNode[selectedNode.length-1]));
+   if(selectedNode.length<=0 ||(selectedNode.length>0 && $('#fstree').jstree(true).get_type(selectedNode[selectedNode.length-1])!="folder")) return;
+   var dataItems = event.dataTransfer.items;
+   console.log("dataItems.length "+dataItems.length);
+   for (var i = 0; i < dataItems.length; i += 1) {
+       var file=dataItems[i].getAsFile();
+       console.log("dataItems[i].kind "+dataItems[i].kind+" "+(dataItems[i].type.match('^image/'))+" "+file.name);
+       if ((dataItems[i].kind === 'file') && (dataItems[i].type.match('^image/') || file.name.endsWith('.jpg'))) {
+     }
+     else if ((dataItems[i].kind === 'file') && (dataItems[i].type.match('^text/csv'))) {
+     }
+     else if ((dataItems[i].kind === 'file') && (dataItems[i].type.match('^text/xml'))) {
+
+     }
+   }
+//    event.target.appendChild(li);
+  }
 
 </script>
 

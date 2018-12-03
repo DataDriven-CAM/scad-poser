@@ -2,6 +2,7 @@ var pmc = pmc || {};
 //var ParseTreeListener = require('./tree/Tree').ParseTreeListener;
 
 pmc.AntlrParserListener = class AntlrParserListener{
+    
     constructor(parser) {
     	//ParseTreeListener.call(this);
         this.parser = parser;
