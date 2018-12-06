@@ -189,14 +189,17 @@ function dragEndHandler(ev, element) {
         reader.onload=(function(theFile) {
           var div=document.createElement("DIV");
           div.id="edit"+(window.edittabs.length+1);
-          div.class="editcontent";
+          div.classList.add('editcontent');
+          div.classList.add('velvet-tab-edit');
           div.contentEditable;
           var innerdiv = document.createElement("DIV");
           innerdiv.id="container"+(window.edittabs.length+1);
           innerdiv.style="width:100%;height:700px;";
+          innerdiv.classList.add('velvet-tab-container');
           innerdiv.contentEditable;
           div.appendChild(innerdiv);
-          document.getElementById("edittab").parentElement.insertBefore(div, document.getElementById("edittab").parentElement.childNodes[2]);
+          console.log(document.getElementById("edittab").nextSibling);
+          document.getElementById("edittab").parentElement.insertBefore(div, document.getElementById("edittab").nextSibling);
           window.edittabs.append(theFile.name, div.id);
           document.getElementById("defaultOpen"+"edit"+window.edittabs.length).click();
           //event.target.result
