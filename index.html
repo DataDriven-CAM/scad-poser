@@ -174,21 +174,19 @@ function dragEndHandler(ev, element) {
 }
 
   function dropHandler(event, element) {
-    console.log("dropHandler "+event.target.id);
     event.preventDefault();
    var selectedNode=$('#fstree').jstree(true).get_selected(true);
-   console.log("type "+$('#fstree').jstree(true).get_type(selectedNode[selectedNode.length-1]));
+//   console.log("type "+$('#fstree').jstree(true).get_type(selectedNode[selectedNode.length-1]));
    if(selectedNode.length<=0 ||(selectedNode.length>0 && $('#fstree').jstree(true).get_type(selectedNode[selectedNode.length-1])!="folder")) return;
    var dataItems = event.dataTransfer.items;
    console.log("dataItems.length "+dataItems.length);
    for (var i = 0; i < dataItems.length; i += 1) {
        var file=dataItems[i].getAsFile();
-       console.log("dataItems[i].kind "+dataItems[i].kind+" "+(dataItems[i].type.match('^application/'))+" "+file.name);
+//       console.log("dataItems[i].kind "+dataItems[i].kind+" "+(dataItems[i].type.match('^application/'))+" "+file.name);
        if ((dataItems[i].kind === 'file') && (dataItems[i].type.match('^application/') || dataItems[i].type.match('^image/') || file.name.endsWith('.jpg'))) {
         var file=dataItems[i].getAsFile();
         var reader = new FileReader();
         reader.onload=(function(theFile) {
-          console.log(theFile);
           var div=document.createElement("DIV");
           div.id="edit"+(window.edittabs.length+1);
           div.class="editcontent";
@@ -198,7 +196,7 @@ function dragEndHandler(ev, element) {
           innerdiv.style="width:100%;height:700px;";
           innerdiv.contentEditable;
           div.appendChild(innerdiv);
-          document.getElementById("edittab").parentElement.insertBefore(div, document.getElementById("edittab").parentElement.childNodes[1]);
+          document.getElementById("edittab").parentElement.insertBefore(div, document.getElementById("edittab").parentElement.childNodes[2]);
           window.edittabs.append(theFile.name, div.id);
           document.getElementById("defaultOpen"+"edit"+window.edittabs.length).click();
           //event.target.result
