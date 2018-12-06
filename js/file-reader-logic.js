@@ -1,17 +1,12 @@
 var antlr4 = require('antlr4/index');
 var scad = require('scad/index');
 
-  function handleFileSelect(evt) {
-    var files = evt.target.files; // FileList object
-
-    // files is a FileList of File objects. List some properties.
-    var output = [];
-    for (var i = 0, f; f = files[i]; i++) {
+  function handleFileSelect(f) {
       const date = new Date(f.lastModified);
-      output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+      /*output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
                   f.size, ' bytes, last modified: ',
                   f.lastModified ? date.toLocaleDateString() : 'n/a',
-                  '</li>');
+                  '</li>');*/
            //Initialize the FileReader object to read the scad file
             var fileReader = new FileReader();
         let promise = new Promise((resolve, reject)=>{
@@ -26,15 +21,11 @@ var scad = require('scad/index');
             var listener=new pmc.AntlrParserListener(parser);
             parser.addParseListener(listener);
             var tree = parser.scad();
-                viewStylish(evt, tokens, lexer, parser, tree);
+                viewStylish(tokens, lexer, parser, tree);
                 resolve("completed.");
             }
             fileReader.readAsText(f);
         }).then((result)=>{
           console.log(result);}, (err)=>{console.log('err: '+err);
         });
-    }
-    document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
   }
-
-  document.getElementById('files').addEventListener('change', handleFileSelect, false);

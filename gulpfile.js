@@ -2,6 +2,7 @@ var gulp = require('gulp');
 var concat = require('gulp-concat');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
+var removeRequire = require('gulp-remove-require');
 //var antlr4 = require('gulp-antlr4');
 
 //script paths
@@ -10,9 +11,12 @@ var jsFiles = 'bower_components/antlr4/runtime/JavaScript/src/antlr4/**/*.js',
     cytoscapeFile = 'bower_components/cytoscape/dist/*.min.js',
     velvetFile = '../velvet/Velvet.js',
     velvetFiles = '../velvet/**/*.js',
+    antlr4File = '../antlr4/runtime/JavaScript/src/antlr4/index.js',
+    antlr4Files = '../antlr4/runtime/JavaScript/src/antlr4/**/*.js',
     cssFile = '../velvet/css/velvet.css',
     atnFile = '../cytoscape-atn/layout.js',
     atnFiles = '../cytoscape-atn/**/*.js',
+    tmpDest = 'tmp',
     jsDest = 'js',
     cssDest = 'css',
     requireFile = 'bower_components/antlr4/runtime/JavaScript/src/lib/require.js',
@@ -28,6 +32,21 @@ gulp.task('antlr4-symlink', function(done) {
         .pipe(gulp.symlink(requireDest));
 });
 
+gulp.task('antlr4-copy', function(done) {
+    return gulp.src([antlr4File, antlr4Files])
+        .pipe(concat('antlr4.js'))
+        .pipe(gulp.dest(tmpDest));
+});
+
+gulp.task('remove-sass-requires', function() {
+    return gulp.src([antlr4File, antlr4Files])
+        .pipe(removeRequire({
+            testString: '/',
+            removeLine: true
+        }))
+        .pipe(concat('antlr4.js'))
+        .pipe(gulp.dest(jsDest));
+});
 gulp.task('velvet-copy', function(done) {
     return gulp.src([velvetFile, velvetFiles])
         .pipe(concat('velvet.js'))
@@ -38,12 +57,6 @@ gulp.task('velvet-css-copy', function(done) {
     return gulp.src([cssFile, '../velvet/**/*.css'])
         .pipe(concat('velvet.css'))
         .pipe(gulp.dest(cssDest));
-});
-
-gulp.task('streamsaver-copy', function(done) {
-    return gulp.src([streamSaverFiles])
-        .pipe(concat('StreamSaver.js'))
-        .pipe(gulp.dest(jsDest));
 });
 
 gulp.task('cytoscape-copy', function(done) {
@@ -78,10 +91,10 @@ gulp.task('solid-fs-copy', function(done) {
 });
 
 gulp.task('default', gulp.series('set-java-env', gulp.series('antlr4-symlink', gulp.series('velvet-copy',
-        gulp.series('velvet-css-copy', gulp.series('streamsaver-copy', gulp.series('cytoscape-copy', gulp.series('cytoscape-atn-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy','solid-fs-copy'))), (done) => {
+        gulp.series('velvet-css-copy', gulp.series('cytoscape-copy', gulp.series('cytoscape-atn-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy','solid-fs-copy'))), (done) => {
   // place code for your default task here
   done();
-})))))))));
+}))))))));
 
 /*gulp.task('scripts', function(done) {
     return gulp.src(jsFiles)

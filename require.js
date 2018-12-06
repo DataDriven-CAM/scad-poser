@@ -125,7 +125,7 @@ function factory(parent) {
             );
           module.loaded = true;
         }
-        if (resolve)
+        if ((resolve !== null) && (typeof resolve === 'function'))
           resolve(noLoad ? href : cache[href].exports);
       }
     }
@@ -143,6 +143,7 @@ if (self.require)
   console.warn("'self.require' already exists");
 
 // NOTE Create the global require function and set the default root
-(self.require = factory(null)).root = "http://roger-g74sx:8888/";
+console.log(location.hostname);
+(self.require = factory(null)).root = "https://"+location.hostname+":8888/";
 
 })();

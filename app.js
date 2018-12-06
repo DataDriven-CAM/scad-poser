@@ -1,10 +1,14 @@
 const os = require('os');
 var http = require('http')
+var https = require('https')
 var path = require('path')
 var url = require('url')
 var fs = require('fs')
 
-  var theServer=http.createServer(function (request, response) {
+  var theServer=https.createServer({
+      key: fs.readFileSync('/home/roger/NodeProjects/scad.key'),
+      cert: fs.readFileSync('/home/roger/NodeProjects/scad.cert')
+  }, (request, response) => {
      try {
        var requestUrl = url.parse(request.url);
            //console.dir("requestUrl "+requestUrl);
@@ -91,6 +95,6 @@ var fs = require('fs')
   theServer.on('close', function () { console.dir("the server closed ")});
   theServer.on('open', function () { console.dir("listening on 8888 ")});
   var PORT=8888;
-  theServer.listen(PORT, os.hostname(), 511, function(){
+  theServer.listen(PORT, 'localhost', 511, function(){
     console.log( "Server listening on port:%s of %s", PORT, os.hostname() );
 });

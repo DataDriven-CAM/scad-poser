@@ -72,5 +72,9 @@ class Tabs{
     document.getElementById(evt.currentTarget.actionId).style.display = "block";
     evt.currentTarget.className += " active";
   }
+  
+  get length(){
+      return this.theTab.childElementCount;
+  }
 
 }
