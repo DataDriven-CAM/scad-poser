@@ -38,7 +38,7 @@ var antlr4 = require({main: './antlr4/index', sync: true});
 var scad = require({main: './scad/index', sync: true});
 
 var ATNState = require({main: 'antlr4/atn/ATNState', sync: true}).ATNState;
-  
+
   function viewStylish(tokens, lexer, parser, tree){
     var font = new pmc.Font('16px serif');
     var canvas = document.createElement("canvas");
@@ -53,7 +53,7 @@ var ATNState = require({main: 'antlr4/atn/ATNState', sync: true}).ATNState;
     //canvas.setAttribute("width", getComputedStyle(canvas).getPropertyValue('width').slice(0,-2)*2*window.devicePixelRatio);
     //canvas.setAttribute("height", getComputedStyle(canvas).getPropertyValue('height').slice(0,-2)*2*window.devicePixelRatio);
     container.appendChild(canvas);
-    velvet = new pmc.Velvet(canvas, font, tokens, lexer, parser, tree);
+    window.velvet = new pmc.Velvet(canvas, font, tokens, lexer, parser, tree);
     velvet.addKeyListener((event) => {
       console.log(event.key);
       /*const fileStream = streamSaver.createWriteStream('filename.scad')
@@ -302,7 +302,8 @@ menu.append("Edit");
 menu.append("Generate", (event) => {
       var drawer = new Drawer();
       drawer.slideBack();
-      var generator = new pmc.cnc.Generator(velvet.getTree());
+      var generator = new pmc.cnc.Generator(velvet.getTokens(), velvet.getTree());
+      generator.publish("cnc.cnc");
 });
 menu.append("Windows");
 menu.append("Edit", "Cut", (event) => {
