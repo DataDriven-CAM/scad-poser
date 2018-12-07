@@ -16,7 +16,8 @@ var fs = require('fs')
        var resourcePath=path.normalize(requestUrl.pathname);
        //const contentType = request.getHeader('Content-Type');
         //console.dir("contentType "+contentType);
-           if(resourcePath.endsWith("./antlr4/index.js"))console.dir("resourcePath "+resourcePath);
+           //if(resourcePath.endsWith("antlr4/index"))
+           //console.dir("resourcePath "+resourcePath);
       /*if(resourcePath.endsWith("primary-disk.scad")){
          var filePath = "/home/roger/NodeProjects/cam-io/test/examples/primary-disk.scad";
          //console.dir(filePath);

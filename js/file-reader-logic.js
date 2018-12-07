@@ -1,5 +1,5 @@
-var antlr4 = require('antlr4/index');
-var scad = require('scad/index');
+//var require = Tarp.require;
+//var antlr4 = require({main: 'antlr4/index'});
 
   function handleFileSelect(f) {
       const date = new Date(f.lastModified);
@@ -12,7 +12,6 @@ var scad = require('scad/index');
         let promise = new Promise((resolve, reject)=>{
             fileReader.onload = function (e) {
                 var worker = new Worker("AntlrWorker.js");
-                
             var stream = antlr4.CharStreams.fromString(fileReader.result);
             var lexer = new scad.SCADLexer.SCADLexer(stream);
             var tokens = new antlr4.CommonTokenStream(lexer);

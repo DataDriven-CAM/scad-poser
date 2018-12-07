@@ -14,7 +14,7 @@
   <link rel="stylesheet" type="text/css" href="css/velvet.css">
   <link rel="stylesheet" type="text/css" href="css/atn-graph.css">
 
-  <script src="require.js"></script>
+  <script src="js/require.js"></script>
   <script src="js/velvet.js"></script>
   <script src="js/cytoscape.min.js"></script>
   <script src="js/cytoscape-atn.js"></script>
@@ -33,8 +33,11 @@
   <script type="text/javascript" src="js/Preferences.js"></script>
   <script type="text/javascript" src="js/cnc/Generator.js"></script>
 <script type="application/javascript">
-var antlr4 = require('antlr4/index');
-var ATNState = require('antlr4/atn/ATNState').ATNState;
+var require = Tarp.require;
+var antlr4 = require({main: './antlr4/index', sync: true});
+var scad = require({main: './scad/index', sync: true});
+
+var ATNState = require({main: 'antlr4/atn/ATNState', sync: true}).ATNState;
   
   function viewStylish(tokens, lexer, parser, tree){
     var font = new pmc.Font('16px serif');
@@ -124,14 +127,11 @@ var ATNState = require('antlr4/atn/ATNState').ATNState;
   <script>
   
 function dragStartHandler(ev, element) {
-    console.log("dragStartHandler "+ev.target.id);
   ev.target.style.opacity = '0.4';  // this / e.target is the source node.
   ev.dataTransfer.effectAllowed = "copyMove";
   ev.dataTransfer.dropEffect = "copy";
   var dataURL = ev.target.toDataURL();
-        console.log(element.id);
   var fileName=$('.jstree-clicked').text();
-        console.log(fileName);
   ev.dataTransfer.setData( "DownloadURL", 'image/png:' +fileName+":"+dataURL);
   //ev.dataTransfer.setData("text/x-moz-url", dataURL);
   //ev.dataTransfer.setData("application/x-moz-file-promise-url", dataURL);
@@ -148,12 +148,9 @@ function dragHandler(ev, element) {
 }
 
 function dragEnterHandler(event) {
-    console.log("dragEnterHandler "+event.target.id);
     var items = event.dataTransfer.items;
     for (var i = 0; i < items.length; ++i) {
       var item = items[i];
-      console.log(item.kind);
-      console.log(item.type);
       if (item.kind == 'file' && item.type == 'application/x-openscad') {
         event.preventDefault();
         return;
@@ -167,7 +164,6 @@ function dragEnterHandler(event) {
  ev.dataTransfer.dropEffect = "copy"
 }
 function dragEndHandler(ev, element) {
-    console.log("dragEndHandler "+ev.target.id);
   ev.target.style.opacity = '1.0';  // this / e.target is the source node.
   ev.dataTransfer.dropEffect = "none"
   ev.preventDefault();
@@ -179,7 +175,6 @@ function dragEndHandler(ev, element) {
 //   console.log("type "+$('#fstree').jstree(true).get_type(selectedNode[selectedNode.length-1]));
    if(selectedNode.length<=0 ||(selectedNode.length>0 && $('#fstree').jstree(true).get_type(selectedNode[selectedNode.length-1])!="folder")) return;
    var dataItems = event.dataTransfer.items;
-   console.log("dataItems.length "+dataItems.length);
    for (var i = 0; i < dataItems.length; i += 1) {
        var file=dataItems[i].getAsFile();
 //       console.log("dataItems[i].kind "+dataItems[i].kind+" "+(dataItems[i].type.match('^application/'))+" "+file.name);
@@ -198,7 +193,6 @@ function dragEndHandler(ev, element) {
           innerdiv.classList.add('velvet-tab-container');
           innerdiv.contentEditable;
           div.appendChild(innerdiv);
-          console.log(document.getElementById("edittab").nextSibling);
           document.getElementById("edittab").parentElement.insertBefore(div, document.getElementById("edittab").nextSibling);
           window.edittabs.append(theFile.name, div.id);
           document.getElementById("defaultOpen"+"edit"+window.edittabs.length).click();
@@ -212,7 +206,6 @@ function dragEndHandler(ev, element) {
 
         $(document)
             .on('dnd_move.vakata', function (e, data) {
-              console.log("dnd_move.vakata");
                 var t = $(data.event.target);
                 if(!t.closest('.jstree').length) {
                     if(t.closest('.drop').length) {
@@ -224,7 +217,6 @@ function dragEndHandler(ev, element) {
                 }
             })
             .on('dnd_stop.vakata', function (e, data) {
-              console.log("dnd_stop.vakata");
                 var t = $(data.event.target);
                 if(!t.closest('.jstree').length) {
                     if(t.closest('.drop').length) {
@@ -431,7 +423,7 @@ async function login(idp) {
 $(function () {
 
             var jsondata = [
-        { "text" : "solid-pod", "type":"folder", "state" : {"opened" : true }, "children" : []}];
+        { "text" : "pod", "type":"folder", "state" : {"opened" : true }, "children" : []}];
 createFSTree(jsondata);
         });
 function createFSTree(jsondata) {
