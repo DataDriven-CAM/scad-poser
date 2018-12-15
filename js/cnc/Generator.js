@@ -159,16 +159,22 @@ pmc.cnc.Generator = class Generator {
     	var event = new Event('change');
 
     	opa.dispatchEvent(event);
-    	var runner = new Object();
     	console.log(this.tree);
+    	var body = "";
         for(var guessIndex=0;guessIndex<this.tree.children.length;guessIndex++){
           if(typeof this.tree.children[guessIndex].ruleIndex==='number'){
               switch(this.tree.children[guessIndex].ruleIndex){
                   case this.RULE_equation:
-                      runner[this.tree.children[guessIndex].children[0].start.text] = this.tree.children[guessIndex].children[2].start.text;
+                      body += "this."+this.tree.children[guessIndex].children[0].start.text+" = "
+                      body += this.codeUp(this.tree.children[guessIndex].children[2])+";\n";
                       break;
                   case this.RULE_modules:
-                      console.log(this.tree.children[guessIndex]);
+                    console.log("modules");
+                    console.log(this.tree.children[guessIndex].children[1]);
+                      body += "this."+this.tree.children[guessIndex].children[1].start.text+" = function(parent){\n";
+                      body += this.codeUp(this.tree.children[guessIndex].children[this.tree.children[guessIndex].children.length-2]);
+                      console.log(this.tree.children[guessIndex].children[4]);
+                      body += "}\n\n";
                       break;
               }
           }
@@ -196,10 +202,153 @@ pmc.cnc.Generator = class Generator {
               //treeRuleTypes.push(ruleIndex);
           }
         }
+      console.log("body "+body);
+    	var runner = new Function ('parent', body);
+    	runner(this);
     	opa.scrollTop = opa.scrollHeight;
     	event = new Event('change');
 
     	opa.dispatchEvent(event);
         console.log(runner);
+    }
+    
+    codeUp(branch){
+        var code="";
+          if(typeof branch.ruleIndex==='number'){
+              switch(branch.ruleIndex){
+                  case this.RULE_expression:
+                  case this.RULE_scope:
+                  case this.RULE_implicit_scope:
+                      for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
+                        if(typeof branch.children[guessIndex].ruleIndex==='number')
+                        code += this.codeUp(branch.children[guessIndex]);
+                      }
+                      break;
+                  case this.RULE_component:
+                    console.log("component");
+                    console.log(branch.children.length);
+                      code+=this.codeUpComponent(branch.children[0]);
+                      break;
+                  case this.RULE_booleans:
+                      console.log("bool");
+                      switch(branch.children[0].ruleIndex){
+                        case this.RULE_difference:
+                          var comp1=this.codeUp(branch.children[0].children[0]);
+                          var comp2=this.codeUp(branch.children[0].children[1]);
+                          code+=comp1;
+                          code+=comp2;
+                        break;
+                      }
+                      break;
+                  case this.RULE_logical:
+                      code += this.codeUp(branch.children[0]);
+                      break;
+                  case this.RULE_add:
+                      code+=" + "+this.codeUp(branch.children[1]);
+                      break;
+                  case this.RULE_subtract:
+                      code+=" - "+this.codeUp(branch.children[1]);
+                      break;
+                  case this.RULE_multiply:
+                      code+=" * "+this.codeUp(branch.children[1]);
+                      break;
+                  case this.RULE_divide:
+                      code+="/("+this.codeUp(branch.children[1])+")";
+                      break;
+                  case this.RULE_sin:
+                      code+="Math.sin("+this.codeUp(branch.children[1])+")";
+                      break;
+                  case this.RULE_cos:
+                      code+="Math.cos("+this.codeUp(branch.children[1])+")";
+                      break;
+                  case this.RULE_equation:
+                      code+="\tparent."+branch.children[0].start.text +"=";
+                      for(var eqIndex=2;eqIndex<branch.children.length;eqIndex++){
+                      code+=this.codeUp(branch.children[eqIndex]);
+                      }
+                      code+=";\n";
+                      break;
+                  case this.RULE_variable:
+                  case this.RULE_number:
+                      code+=branch.start.text;
+                      break;
+                    case this.RULE_logical:
+                        code += this.codeUp(branch.children[0]);
+                        break;
+                  default:
+                      console.log("Unsupported "+branch.ruleIndex);
+                      console.log(branch);
+                      break;
+              }
+          }
+          else if(typeof branch.symbol==='object'){
+            console.log("symbol");
+            console.log(branch.symbol);
+            code += branch.symbol.text;
+          }
+        return code;
+    }
+    
+    codeUpComponent(branch){
+        var code="";
+          if(typeof branch.ruleIndex==='number'){
+              switch(branch.ruleIndex){
+                case this.RULE_color:
+                    console.log("color");
+                    console.log(branch.children);
+                    code+= "this.style = \"color: "+branch.children[2].symbol.text+"\";\n";
+                    break;
+                case this.RULE_cylinder:
+                  console.log("cylinder");
+                  console.log(branch);
+                  code +="this.cylinder = new pmc.component.Cylinder(";
+                  var firstArg=true;
+                  for(var argIndex=0;argIndex<branch.children.length;argIndex++){
+                    switch(branch.children[argIndex].ruleIndex){
+                      case this.RULE_h:
+                        console.log(branch.children[argIndex].children.length);
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "h = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_r1:
+                        console.log(branch.children[argIndex].children.length);
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "r1 = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_r2:
+                        console.log(branch.children[argIndex].children.length);
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "r2 = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_center:
+                        console.log(branch.children[argIndex].children.length);
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "center = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_fa:
+                        console.log(branch.children[argIndex].children.length);
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "fa = "+this.codeUp(branch.children[argIndex].children[3]);
+                        break;
+                      default:
+                        //console.log("arg ");
+                        //console.log(branch.children[argIndex]);
+                        break;
+                    }
+                  }
+                  code += ");\n";
+                  break;
+                default:
+                    console.log("Unsupported component "+branch.ruleIndex);
+                    console.log(branch);
+                    break;
+              }
+          }
+        return code;
     }
 }

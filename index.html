@@ -532,7 +532,7 @@ function createFSTree(jsondata) {
                                     creating=false;
 				})
 				.on('move_node.jstree', function (e, data) {
-                                    console.log(data.old_parent);
+                                    //console.log(data.old_parent);
                                     var branch = $('#fstree').jstree(true).get_path(data.node);
                                     branch.shift();
                                     var names=branch.join("/");
