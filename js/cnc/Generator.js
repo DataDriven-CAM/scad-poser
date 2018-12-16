@@ -7,6 +7,133 @@ pmc.cnc.Generator = class Generator {
     constructor(tokens, tree) {
         this.tokens = tokens;
         this.tree = tree;
+
+        this.Children = 1;
+        this.Sphere = 2;
+        this.Cube = 3;
+        this.Cylinder = 4;
+        this.Circle = 5;
+        this.Square = 6;
+        this.Polygon = 7;
+        this.Translate = 8;
+        this.Rotate = 9;
+        this.Scale = 10;
+        this.Resize = 11;
+        this.Mirror = 12;
+        this.Offset = 13;
+        this.Hull = 14;
+        this.Minkowski = 15;
+        this.Union = 16;
+        this.Difference = 17;
+        this.Intersection = 18;
+        this.Color = 19;
+        this.Module = 20;
+        this.Function = 21;
+        this.Linear_extrude = 22;
+        this.Rotate_extrude = 23;
+        this.Surface = 24;
+        this.Render = 25;
+        this.Projection = 26;
+        this.IntersectionFor = 27;
+        this.For = 28;
+        this.Import = 29;
+        this.Use = 30;
+        this.Polyhedron = 31;
+        this.Text = 32;
+        this.Echo = 33;
+        this.Version = 34;
+        this.If = 35;
+        this.Else = 36;
+        this.Variable = 37;
+        this.Eq = 38;
+        this.Underscore = 39;
+        this.FSlash = 40;
+        this.LParenthese = 41;
+        this.RParenthese = 42;
+        this.LBrace = 43;
+        this.RBrace = 44;
+        this.LBracket = 45;
+        this.RBracket = 46;
+        this.LAngleBracket = 47;
+        this.RAngleBracket = 48;
+        this.Period = 49;
+        this.Comma = 50;
+        this.Semicolon = 51;
+        this.Dollar = 52;
+        this.Pound = 53;
+        this.Percent = 54;
+        this.At = 55;
+        this.MultilineComment = 56;
+        this.Comment = 57;
+        this.Whitespace = 58;
+        this.Abs = 59;
+        this.Sign = 60;
+        this.Sin = 61;
+        this.Cos = 62;
+        this.Tan = 63;
+        this.Asin = 64;
+        this.Acos = 65;
+        this.Atan2 = 66;
+        this.Atan = 67;
+        this.Floor = 68;
+        this.Round = 69;
+        this.Ceil = 70;
+        this.Ln = 71;
+        this.Len = 72;
+        this.Let = 73;
+        this.Log = 74;
+        this.Pow = 75;
+        this.Sqrt = 76;
+        this.Exp = 77;
+        this.Rands = 78;
+        this.Min = 79;
+        this.Max = 80;
+        this.Cross = 81;
+        this.True = 82;
+        this.False = 83;
+        this.Convexity = 84;
+        this.Center = 85;
+        this.Twist = 86;
+        this.Cut = 87;
+        this.Slices = 88;
+        this.Faces = 89;
+        this.Paths = 90;
+        this.Layer = 91;
+        this.Origin = 92;
+        this.Triangles = 93;
+        this.Size = 94;
+        this.Height = 95;
+        this.Angle = 96;
+        this.Points = 97;
+        this.Halign = 98;
+        this.Valign = 99;
+        this.Font = 100;
+        this.R = 101;
+        this.D = 102;
+        this.H = 103;
+        this.Float = 104;
+        this.Number = 105;
+        this.Minus = 106;
+        this.Plus = 107;
+        this.Multiply = 108;
+        this.LessThan = 109;
+        this.GreaterThan = 110;
+        this.Not = 111;
+        this.Ampersand = 112;
+        this.Pipe = 113;
+        this.Question = 114;
+        this.Colon = 115;
+        this.String = 116;
+        this.NameStartChar = 117;
+        this.NameChar = 118;
+        this.Fa = 119;
+        this.Fs = 120;
+        this.Fn = 121;
+        this.Vpr = 122;
+        this.Vpt = 123;
+        this.Vpd = 124;
+        this.T = 125;
+        
         this.RULE_scad = 0;
         this.RULE_use_line = 1;
         this.RULE_import_line = 2;
@@ -169,11 +296,61 @@ pmc.cnc.Generator = class Generator {
                       body += this.codeUp(this.tree.children[guessIndex].children[2])+";\n";
                       break;
                   case this.RULE_modules:
-                    console.log("modules");
-                    console.log(this.tree.children[guessIndex].children[1]);
-                      body += "this."+this.tree.children[guessIndex].children[1].start.text+" = function(parent){\n";
-                      body += this.codeUp(this.tree.children[guessIndex].children[this.tree.children[guessIndex].children.length-2]);
-                      console.log(this.tree.children[guessIndex].children[4]);
+                      body += "this."+this.tree.children[guessIndex].children[1].start.text+" = function(parent";
+                      //body += this.codeUp(this.tree.children[guessIndex].children[this.tree.children[guessIndex].children.length-2]);
+                      var codeIndex=2;
+                      if(typeof this.tree.children[guessIndex].children[2].symbol==='object' && this.tree.children[guessIndex].children[2].symbol.type===this.LParenthese){
+                        codeIndex++;
+                        while(codeIndex<this.tree.children[guessIndex].children.length && (typeof this.tree.children[guessIndex].children[codeIndex].symbol!=='object' || this.tree.children[guessIndex].children[codeIndex].symbol.type!==this.RParenthese)){
+                          if(typeof this.tree.children[guessIndex].children[codeIndex].symbol!=='object' || this.tree.children[guessIndex].children[codeIndex].symbol.type!==this.Comma){
+                          body+=", "+this.codeUp(this.tree.children[guessIndex].children[codeIndex]);
+                          }
+                          codeIndex++;
+                        }
+                        codeIndex++;
+                      }
+                      body+="){\n";
+                        while(codeIndex<this.tree.children[guessIndex].children.length && (typeof this.tree.children[guessIndex].children[codeIndex].symbol!=='object' || this.tree.children[guessIndex].children[codeIndex].symbol.type!==this.Semicolon)){
+                          console.log("mod "+this.tree.children[guessIndex].children[codeIndex].children.length);
+                          console.log(this.tree.children[guessIndex].children[codeIndex]);
+                          for(var lineIndex=0;lineIndex<this.tree.children[guessIndex].children[codeIndex].children.length;lineIndex++){
+                            console.log(scopeIndex+" scope "+( this.tree.children[guessIndex].children[codeIndex].children[lineIndex]));
+                            if(typeof this.tree.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex==='number')
+                            switch(this.tree.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex){
+                              case this.RULE_scope:
+                          var scope = this.tree.children[guessIndex].children[codeIndex].children[lineIndex];
+                          for(var scopeIndex=0;scopeIndex<scope.children.length;scopeIndex++){
+                            console.log(scopeIndex+" scope "+( scope.children[scopeIndex]));
+                            if(typeof scope.children[scopeIndex].ruleIndex==='number')
+                            switch(scope.children[scopeIndex].ruleIndex){
+                              case this.RULE_equation:
+                                body += "this."+this.codeUp(scope.children[scopeIndex])+";\n";
+                                break;
+                              default:
+                                body += this.codeUp(this.tree.children[guessIndex].children[codeIndex].children[scopeIndex]);
+                              break;
+                            }
+                          }
+                              break;
+                              case this.RULE_implicit_scope:
+                          var scope = this.tree.children[guessIndex].children[codeIndex].children[lineIndex];
+                          for(var scopeIndex=0;scopeIndex<scope.children.length;scopeIndex++){
+                            console.log(scopeIndex+" scope "+( scope.children[scopeIndex]));
+                            if(typeof scope.children[scopeIndex].ruleIndex==='number')
+                            switch(scope.children[scopeIndex].ruleIndex){
+                              case this.RULE_equation:
+                                body += "this."+this.codeUp(scope.children[scopeIndex])+";\n";
+                                break;
+                              default:
+                                body += this.codeUp(this.tree.children[guessIndex].children[codeIndex].children[scopeIndex]);
+                              break;
+                            }
+                          }
+                              break;
+                            }
+                          }
+                          codeIndex++;
+                        }
                       body += "}\n\n";
                       break;
               }
@@ -217,26 +394,40 @@ pmc.cnc.Generator = class Generator {
           if(typeof branch.ruleIndex==='number'){
               switch(branch.ruleIndex){
                   case this.RULE_expression:
+                    console.log("expression");
+                    console.log(branch);
+                  case this.RULE_args:
                   case this.RULE_scope:
                   case this.RULE_implicit_scope:
                       for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
                         if(typeof branch.children[guessIndex].ruleIndex==='number')
-                        code += this.codeUp(branch.children[guessIndex]);
+                          code += this.codeUp(branch.children[guessIndex]);
+                      }
+                      break;
+                  case this.RULE_transforms:
+                      console.log("transforms");
+                      switch(branch.children[0].ruleIndex){
+                        case this.RULE_translate:
+                          code += "this.translate=";
+                      for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
+                        //if(typeof branch.children[guessIndex].ruleIndex==='number')
+                          code += this.codeUp(branch.children[guessIndex]);
+                      }
+                        break;
                       }
                       break;
                   case this.RULE_component:
-                    console.log("component");
-                    console.log(branch.children.length);
                       code+=this.codeUpComponent(branch.children[0]);
                       break;
                   case this.RULE_booleans:
                       console.log("bool");
                       switch(branch.children[0].ruleIndex){
                         case this.RULE_difference:
-                          var comp1=this.codeUp(branch.children[0].children[0]);
-                          var comp2=this.codeUp(branch.children[0].children[1]);
-                          code+=comp1;
-                          code+=comp2;
+                          code += "new pmc.component.Difference(";
+                          code += this.codeUp(branch.children[0].children[0]);
+                          code+=", ";
+                          code += this.codeUp(branch.children[0].children[1]);
+                          code+=")";
                         break;
                       }
                       break;
@@ -262,11 +453,12 @@ pmc.cnc.Generator = class Generator {
                       code+="Math.cos("+this.codeUp(branch.children[1])+")";
                       break;
                   case this.RULE_equation:
-                      code+="\tparent."+branch.children[0].start.text +"=";
+                      code+=branch.children[0].start.text +"=";
+                      console.log("eq "+branch.children.length);
                       for(var eqIndex=2;eqIndex<branch.children.length;eqIndex++){
+                      console.log(eqIndex+" eq "+branch.children[eqIndex].ruleIndex);
                       code+=this.codeUp(branch.children[eqIndex]);
                       }
-                      code+=";\n";
                       break;
                   case this.RULE_variable:
                   case this.RULE_number:
@@ -275,6 +467,22 @@ pmc.cnc.Generator = class Generator {
                     case this.RULE_logical:
                         code += this.codeUp(branch.children[0]);
                         break;
+                  case this.RULE_point:
+                      for(var guessIndex=1;guessIndex<branch.children.length-1;guessIndex++){
+                        if(typeof branch.children[guessIndex].ruleIndex==='number')
+                        switch(guessIndex){
+                          case 1:
+                          code += "["+this.codeUp(branch.children[guessIndex].children[0]);
+                          break;
+                          case 3:
+                          code += ", "+this.codeUp(branch.children[guessIndex].children[0]);
+                          break;
+                          case 5:
+                          code += ", "+this.codeUp(branch.children[guessIndex].children[0])+"]";
+                          break;
+                        }
+                      }
+                      break;
                   default:
                       console.log("Unsupported "+branch.ruleIndex);
                       console.log(branch);
@@ -282,8 +490,8 @@ pmc.cnc.Generator = class Generator {
               }
           }
           else if(typeof branch.symbol==='object'){
-            console.log("symbol");
-            console.log(branch.symbol);
+            //console.log("symbol");
+            //console.log(branch.symbol);
             code += branch.symbol.text;
           }
         return code;
@@ -294,43 +502,49 @@ pmc.cnc.Generator = class Generator {
           if(typeof branch.ruleIndex==='number'){
               switch(branch.ruleIndex){
                 case this.RULE_color:
-                    console.log("color");
-                    console.log(branch.children);
-                    code+= "this.style = \"color: "+branch.children[2].symbol.text+"\";\n";
+                    code+= "this.style = \"color: ";
+                      for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
+                        if(typeof branch.children[guessIndex].ruleIndex==='number')
+                        switch(branch.children[guessIndex].ruleIndex){
+                          case this.RULE_red:
+                          code += "rgb(255*"+this.codeUp(branch.children[guessIndex].children[0]);
+                          break;
+                          case this.RULE_green:
+                          code += ", 255*"+this.codeUp(branch.children[guessIndex].children[0]);
+                          break;
+                          case this.RULE_blue:
+                          code += ", 255*"+this.codeUp(branch.children[guessIndex].children[0])+")";
+                          break;
+                        }
+                      }
+                      code += "\";\n";
                     break;
                 case this.RULE_cylinder:
-                  console.log("cylinder");
-                  console.log(branch);
-                  code +="this.cylinder = new pmc.component.Cylinder(";
+                  code +="new pmc.component.Cylinder(";
                   var firstArg=true;
                   for(var argIndex=0;argIndex<branch.children.length;argIndex++){
                     switch(branch.children[argIndex].ruleIndex){
                       case this.RULE_h:
-                        console.log(branch.children[argIndex].children.length);
                         if(!firstArg)code += ", ";
                         else firstArg=false;
                         code += "h = "+this.codeUp(branch.children[argIndex].children[2]);
                         break;
                       case this.RULE_r1:
-                        console.log(branch.children[argIndex].children.length);
                         if(!firstArg)code += ", ";
                         else firstArg=false;
                         code += "r1 = "+this.codeUp(branch.children[argIndex].children[2]);
                         break;
                       case this.RULE_r2:
-                        console.log(branch.children[argIndex].children.length);
                         if(!firstArg)code += ", ";
                         else firstArg=false;
                         code += "r2 = "+this.codeUp(branch.children[argIndex].children[2]);
                         break;
                       case this.RULE_center:
-                        console.log(branch.children[argIndex].children.length);
                         if(!firstArg)code += ", ";
                         else firstArg=false;
                         code += "center = "+this.codeUp(branch.children[argIndex].children[2]);
                         break;
                       case this.RULE_fa:
-                        console.log(branch.children[argIndex].children.length);
                         if(!firstArg)code += ", ";
                         else firstArg=false;
                         code += "fa = "+this.codeUp(branch.children[argIndex].children[3]);
@@ -343,6 +557,37 @@ pmc.cnc.Generator = class Generator {
                   }
                   code += ");\n";
                   break;
+                case this.RULE_transforms:
+                    console.log("transforms "+branch.children[0].children.length);
+                    switch(branch.children[0].ruleIndex){
+                      case this.RULE_translate:
+                        code += "this.translate=";
+                        switch(branch.children[0].children[2].ruleIndex){
+                          case this.RULE_equation:
+                            code += "this."+this.codeUp(branch.children[0].children[2])+";\n";
+                            break;
+                          case this.RULE_expression:
+                            code += "this.t="+this.codeUp(branch.children[0].children[2])+";\n";
+                            break;
+                        }
+                      break;
+                      default:
+                      console.log("unsupported");
+                      console.log(branch.children[0]);
+                      break;
+                    }
+                  break;
+                case this.RULE_call:
+                  console.log("call "+branch.children.length);
+                  var firstArg = true;
+                  code += this.codeUp(branch.children[0].children[0])+"(";
+                    for(var guessIndex=1;guessIndex<branch.children.length;guessIndex++){
+                      if(typeof branch.children[guessIndex].ruleIndex==='number')
+                      if(!firstArg){code += ", ";firstArg = false;}
+                        code += this.codeUp(branch.children[guessIndex]);
+                    }
+                  code +=")";
+                    break;
                 default:
                     console.log("Unsupported component "+branch.ruleIndex);
                     console.log(branch);
