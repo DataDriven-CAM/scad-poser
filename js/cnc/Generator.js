@@ -286,99 +286,8 @@ pmc.cnc.Generator = class Generator {
     	var event = new Event('change');
 
     	opa.dispatchEvent(event);
-    	console.log(this.tree);
-    	var body = "";
-        for(var guessIndex=0;guessIndex<this.tree.children.length;guessIndex++){
-          if(typeof this.tree.children[guessIndex].ruleIndex==='number'){
-              switch(this.tree.children[guessIndex].ruleIndex){
-                  case this.RULE_equation:
-                      body += "this."+this.tree.children[guessIndex].children[0].start.text+" = "
-                      body += this.codeUp(this.tree.children[guessIndex].children[2])+";\n";
-                      break;
-                  case this.RULE_modules:
-                      body += "this."+this.tree.children[guessIndex].children[1].start.text+" = function(parent";
-                      //body += this.codeUp(this.tree.children[guessIndex].children[this.tree.children[guessIndex].children.length-2]);
-                      var codeIndex=2;
-                      if(typeof this.tree.children[guessIndex].children[2].symbol==='object' && this.tree.children[guessIndex].children[2].symbol.type===this.LParenthese){
-                        codeIndex++;
-                        while(codeIndex<this.tree.children[guessIndex].children.length && (typeof this.tree.children[guessIndex].children[codeIndex].symbol!=='object' || this.tree.children[guessIndex].children[codeIndex].symbol.type!==this.RParenthese)){
-                          if(typeof this.tree.children[guessIndex].children[codeIndex].symbol!=='object' || this.tree.children[guessIndex].children[codeIndex].symbol.type!==this.Comma){
-                          body+=", "+this.codeUp(this.tree.children[guessIndex].children[codeIndex]);
-                          }
-                          codeIndex++;
-                        }
-                        codeIndex++;
-                      }
-                      body+="){\n";
-                        while(codeIndex<this.tree.children[guessIndex].children.length && (typeof this.tree.children[guessIndex].children[codeIndex].symbol!=='object' || this.tree.children[guessIndex].children[codeIndex].symbol.type!==this.Semicolon)){
-                          console.log("mod "+this.tree.children[guessIndex].children[codeIndex].children.length);
-                          console.log(this.tree.children[guessIndex].children[codeIndex]);
-                          for(var lineIndex=0;lineIndex<this.tree.children[guessIndex].children[codeIndex].children.length;lineIndex++){
-                            console.log(scopeIndex+" scope "+( this.tree.children[guessIndex].children[codeIndex].children[lineIndex]));
-                            if(typeof this.tree.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex==='number')
-                            switch(this.tree.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex){
-                              case this.RULE_scope:
-                          var scope = this.tree.children[guessIndex].children[codeIndex].children[lineIndex];
-                          for(var scopeIndex=0;scopeIndex<scope.children.length;scopeIndex++){
-                            console.log(scopeIndex+" scope "+( scope.children[scopeIndex]));
-                            if(typeof scope.children[scopeIndex].ruleIndex==='number')
-                            switch(scope.children[scopeIndex].ruleIndex){
-                              case this.RULE_equation:
-                                body += "this."+this.codeUp(scope.children[scopeIndex])+";\n";
-                                break;
-                              default:
-                                body += this.codeUp(this.tree.children[guessIndex].children[codeIndex].children[scopeIndex]);
-                              break;
-                            }
-                          }
-                              break;
-                              case this.RULE_implicit_scope:
-                          var scope = this.tree.children[guessIndex].children[codeIndex].children[lineIndex];
-                          for(var scopeIndex=0;scopeIndex<scope.children.length;scopeIndex++){
-                            console.log(scopeIndex+" scope "+( scope.children[scopeIndex]));
-                            if(typeof scope.children[scopeIndex].ruleIndex==='number')
-                            switch(scope.children[scopeIndex].ruleIndex){
-                              case this.RULE_equation:
-                                body += "this."+this.codeUp(scope.children[scopeIndex])+";\n";
-                                break;
-                              default:
-                                body += this.codeUp(this.tree.children[guessIndex].children[codeIndex].children[scopeIndex]);
-                              break;
-                            }
-                          }
-                              break;
-                            }
-                          }
-                          codeIndex++;
-                        }
-                      body += "}\n\n";
-                      break;
-              }
-          }
-          else if(this.tree.children[guessIndex].children != undefined){
-            for(var childIndex=0;childIndex<this.tree.children[guessIndex].children.length;childIndex++){
-              if(this.tree.children[guessIndex].children[childIndex].symbol != undefined){
-                  opa.value+=""+this.tree.children[guessIndex].children[childIndex].symbol.type+"\n";
-                //treeTypes.push(this.tree.children[guessIndex].children[childIndex].symbol.type);
-              }
-              else if(typeof this.tree.children[guessIndex].children[childIndex].start==='object'){
-                  opa.value+=""+this.tree.children[guessIndex].children[childIndex].start.type+"\n";
-                //treeTypes.push(this.tree.children[guessIndex].children[childIndex].start.type);
-              }
-              else{
-                  opa.value+=""+this.tree.children[guessIndex].children[childIndex].symbol.type+"\n";
-                //treeTypes.push(this.tree.children[guessIndex].children[childIndex].symbol.type);
-              }
-              //ruleIndex = this.tree.children[guessIndex].ruleIndex;
-              //treeRuleTypes.push(ruleIndex);
-            }
-          }
-          else{
-              opa.value+=""+this.tree.children[guessIndex].symbol.type+"\n";
-              //treeTypes.push(this.tree.children[guessIndex].symbol.type);
-              //treeRuleTypes.push(ruleIndex);
-          }
-        }
+    	this.currentBoolean = 0;
+    	var body = this.codeUpModule(this.tree);
       console.log("body "+body);
     	var runner = new Function ('parent', body);
     	runner(this);
@@ -389,13 +298,134 @@ pmc.cnc.Generator = class Generator {
         console.log(runner);
     }
     
+    codeUpModule(branch){
+      var code = "";
+        for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
+          if(typeof branch.children[guessIndex].ruleIndex==='number'){
+              switch(branch.children[guessIndex].ruleIndex){
+                case this.RULE_equation:
+                    code += "this."+branch.children[guessIndex].children[0].start.text+" = "
+                    code += this.codeUp(branch.children[guessIndex].children[2])+";\n";
+                    break;
+                case this.RULE_modules:
+                    code += "this."+branch.children[guessIndex].children[1].start.text+" = function(parent";
+                    //body += this.codeUp(branch.children[guessIndex].children[branch.children[guessIndex].children.length-2]);
+                    var codeIndex=2;
+                    if(typeof branch.children[guessIndex].children[2].symbol==='object' && branch.children[guessIndex].children[2].symbol.type===this.LParenthese){
+                      codeIndex++;
+                      while(codeIndex<branch.children[guessIndex].children.length && (typeof branch.children[guessIndex].children[codeIndex].symbol!=='object' || branch.children[guessIndex].children[codeIndex].symbol.type!==this.RParenthese)){
+                        if(typeof branch.children[guessIndex].children[codeIndex].symbol!=='object' || branch.children[guessIndex].children[codeIndex].symbol.type!==this.Comma){
+                        code += ", "+this.codeUp(branch.children[guessIndex].children[codeIndex]);
+                        }
+                        codeIndex++;
+                      }
+                      codeIndex++;
+                    }
+                    code+="){\n";
+                      while(codeIndex<branch.children[guessIndex].children.length && (typeof branch.children[guessIndex].children[codeIndex].symbol!=='object' || branch.children[guessIndex].children[codeIndex].symbol.type!==this.Semicolon)){
+                        console.log("mod "+branch.children[guessIndex].children[codeIndex].children.length);
+                        console.log(branch.children[guessIndex].children[codeIndex]);
+                        for(var lineIndex=0;lineIndex<branch.children[guessIndex].children[codeIndex].children.length;lineIndex++){
+                          ///console.log(scopeIndex+" scope "+( branch.children[guessIndex].children[codeIndex].children[lineIndex]));
+                          if(typeof branch.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex==='number')
+                          switch(branch.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex){
+                            case this.RULE_scope:
+                              var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
+                              code += this.codeUpModule(scope);
+                            break;
+                            case this.RULE_implicit_scope:
+                              var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
+                              code += this.codeUpModule(scope);
+                            break;
+                          }
+                        }
+                        codeIndex++;
+                      }
+                    code += "}\n\n";
+                    break;
+                  case this.RULE_implicit_scope:
+                      console.log("RULE_implicit_scope "+branch.children[guessIndex].children.length);
+                    code += this.codeUpModule(branch.children[guessIndex]);
+                    break;
+                  case this.RULE_component:
+                      console.log("RULE_component "+branch.children[guessIndex].children.length);
+                    //console.log(branch.children[guessIndex]);
+                      code+=this.codeUpComponent(branch.children[guessIndex].children[0]);
+                      break;
+                  case this.RULE_booleans:
+                      console.log("bool "+branch.children[guessIndex].children.length);
+                      this.codeUpModule(branch.children[guessIndex]);
+                          switch(branch.children[guessIndex].children[0].ruleIndex){
+                            case this.RULE_difference:
+                          code += "new pmc.component.Difference(";
+                          if(branch.children[guessIndex+1].ruleIndex===this.RULE_scope){
+                              code += this.codeUpModule(branch.children[guessIndex+1]);
+                          }
+                          code+=")";
+                            break;
+                            case this.RULE_union_of:
+                              var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
+                              code += this.codeUpModule(scope);
+                            break;
+                            case this.RULE_intersection:
+                              var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
+                              code += this.codeUpModule(scope);
+                            break;
+                          }
+                      break;
+                  case this.RULE_difference:
+                      console.log("difference "+branch.children[guessIndex].children.length);
+                      this.currentBoolean = this.RULE_difference;
+                      if(branch.children[guessIndex].children.length>3 && branch.children[guessIndex].children[0].ruleIndex===this.RULE_annotation_line){
+                        
+                      }
+                      
+                    /*code += "new pmc.component.Difference(";
+                    code += this.codeUp(branch.children[0].children[0]);
+                    code+=", ";
+                    code += this.codeUp(branch.children[0].children[1]);
+                    code+=")";*/
+                   break;
+                  default:
+                      console.log("Unsupported "+branch.children[guessIndex].ruleIndex);
+//                      console.log(branch);
+                      break;
+              }
+          }
+          else if(branch.children[guessIndex].children != undefined){
+            for(var childIndex=0;childIndex<branch.children[guessIndex].children.length;childIndex++){
+              if(branch.children[guessIndex].children[childIndex].symbol != undefined){
+                  //opa.value+=""+branch.children[guessIndex].children[childIndex].symbol.type+"\n";
+                //treeTypes.push(branch.children[guessIndex].children[childIndex].symbol.type);
+              }
+              else if(typeof branch.children[guessIndex].children[childIndex].start==='object'){
+                  //opa.value+=""+branch.children[guessIndex].children[childIndex].start.type+"\n";
+                //treeTypes.push(branch.children[guessIndex].children[childIndex].start.type);
+              }
+              else{
+                  //opa.value+=""+branch.children[guessIndex].children[childIndex].symbol.type+"\n";
+                //treeTypes.push(branch.children[guessIndex].children[childIndex].symbol.type);
+              }
+              //ruleIndex = branch.children[guessIndex].ruleIndex;
+              //treeRuleTypes.push(ruleIndex);
+            }
+          }
+          else{
+              //opa.value+=""+branch.children[guessIndex].symbol.type+"\n";
+              //treeTypes.push(branch.children[guessIndex].symbol.type);
+              //treeRuleTypes.push(ruleIndex);
+          }
+        }
+        return code;
+    }
+    
     codeUp(branch){
         var code="";
           if(typeof branch.ruleIndex==='number'){
               switch(branch.ruleIndex){
                   case this.RULE_expression:
-                    console.log("expression");
-                    console.log(branch);
+                    //console.log("expression");
+                    //console.log(branch);
                   case this.RULE_args:
                   case this.RULE_scope:
                   case this.RULE_implicit_scope:
@@ -484,8 +514,8 @@ pmc.cnc.Generator = class Generator {
                       }
                       break;
                   default:
-                      console.log("Unsupported "+branch.ruleIndex);
-                      console.log(branch);
+                      console.log("codeUp Unsupported "+branch.ruleIndex);
+                      //console.log(branch);
                       break;
               }
           }
@@ -589,8 +619,8 @@ pmc.cnc.Generator = class Generator {
                   code +=")";
                     break;
                 default:
-                    console.log("Unsupported component "+branch.ruleIndex);
-                    console.log(branch);
+                    console.log("comp Unsupported component "+branch.ruleIndex);
+                    //console.log(branch);
                     break;
               }
           }
