@@ -286,7 +286,6 @@ pmc.cnc.Generator = class Generator {
     	var event = new Event('change');
 
     	opa.dispatchEvent(event);
-    	this.currentBoolean = 0;
     	var body = this.codeUpModule(this.tree);
       console.log("body "+body);
     	var runner = new Function ('parent', body);
@@ -343,49 +342,79 @@ pmc.cnc.Generator = class Generator {
                       }
                     code += "}\n\n";
                     break;
-                  case this.RULE_implicit_scope:
-                      console.log("RULE_implicit_scope "+branch.children[guessIndex].children.length);
+                  case this.RULE_scope:
                     code += this.codeUpModule(branch.children[guessIndex]);
                     break;
-                  case this.RULE_component:
-                      console.log("RULE_component "+branch.children[guessIndex].children.length);
-                    //console.log(branch.children[guessIndex]);
-                      code+=this.codeUpComponent(branch.children[guessIndex].children[0]);
-                      break;
+                  case this.RULE_implicit_scope:
+                    code += this.codeUpModule(branch.children[guessIndex]);
+                    break;
                   case this.RULE_booleans:
-                      console.log("bool "+branch.children[guessIndex].children.length);
-                      this.codeUpModule(branch.children[guessIndex]);
-                          switch(branch.children[guessIndex].children[0].ruleIndex){
-                            case this.RULE_difference:
-                          code += "new pmc.component.Difference(";
-                          if(branch.children[guessIndex+1].ruleIndex===this.RULE_scope){
-                              code += this.codeUpModule(branch.children[guessIndex+1]);
+                  case this.RULE_component:
+                    //console.log(branch.children[guessIndex]);
+                    var component = new Array();
+                    this.scanAhead(branch.children[guessIndex].children[0], component);
+                    var compCode = "";
+                    var booleansDepth = 0;
+                    var argDepth = new Array();
+                    argDepth.push(0);
+                    for(var reverseIndex=0;reverseIndex<component.length;reverseIndex++){
+                        if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("new pmc.booleans.") ){
+                          if(booleansDepth>0){
+                            compCode += ", ";
                           }
-                          code+=")";
-                            break;
-                            case this.RULE_union_of:
-                              var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
-                              code += this.codeUpModule(scope);
-                            break;
-                            case this.RULE_intersection:
-                              var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
-                              code += this.codeUpModule(scope);
-                            break;
+                          compCode += component[reverseIndex];
+                          booleansDepth++;
+                          argDepth.push(0);
+                        }
+                        else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("new pmc.component.") ){
+                          if(argDepth[booleansDepth]>0)compCode += ", ";
+                          compCode += component[reverseIndex];
+                          argDepth[booleansDepth]++;
+                        }
+                        else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("{") ){
+                          compCode += "(";
+                        }
+                        else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("}") ){
+                          compCode += ")";
+                        }
+                        else console.log(reverseIndex+" comp "+component[reverseIndex]);
+                    }
+                    code += compCode;
+                    break;
+                  case this.RULE_for_loop:
+                      console.log("for_loop "+branch.children[guessIndex].children.length);
+                      var codeIndex=0;
+                        if(typeof branch.children[guessIndex].children[codeIndex].ruleIndex==='number' && branch.children[guessIndex].ruleIndex===this.RULE_modifier){
+                          codeIndex++;
+                        }
+                        codeIndex+=2;
+                        code +="for(";
+                        var v="";
+                        var expressionCount=0;
+                      while(codeIndex<branch.children[guessIndex].children.length && (typeof branch.children[guessIndex].children[codeIndex].symbol!=='object' || branch.children[guessIndex].children[codeIndex].symbol.type!==this.RParenthese)){
+                        if(typeof branch.children[guessIndex].children[codeIndex].ruleIndex==='number'){
+                          if(branch.children[guessIndex].children[codeIndex].ruleIndex===this.RULE_variable){
+                            v = this.codeUp(branch.children[guessIndex].children[codeIndex]);
                           }
-                      break;
-                  case this.RULE_difference:
-                      console.log("difference "+branch.children[guessIndex].children.length);
-                      this.currentBoolean = this.RULE_difference;
-                      if(branch.children[guessIndex].children.length>3 && branch.children[guessIndex].children[0].ruleIndex===this.RULE_annotation_line){
-                        
+                          else if(branch.children[guessIndex].children[codeIndex].ruleIndex===this.RULE_expression){
+                            if(expressionCount===0)
+                              code += "var "+v+" = "+this.codeUp(branch.children[guessIndex].children[codeIndex])+";";
+                            else if(expressionCount===1)
+                              code += v+" <= "+this.codeUp(branch.children[guessIndex].children[codeIndex])+";"+v+"++";
+                            expressionCount++;
+                          }
+                        }
+                        codeIndex++;
                       }
-                      
-                    /*code += "new pmc.component.Difference(";
-                    code += this.codeUp(branch.children[0].children[0]);
-                    code+=", ";
-                    code += this.codeUp(branch.children[0].children[1]);
-                    code+=")";*/
-                   break;
+                      code+="){\n";
+                      codeIndex++;
+                      while(codeIndex<branch.children[guessIndex].children.length){
+                        if(typeof branch.children[guessIndex].children[codeIndex].ruleIndex==='number')
+                        code+=this.codeUpModule(branch.children[guessIndex].children[codeIndex]);
+                        codeIndex++;
+                      }
+                      code += "}\n";
+                      break;
                   default:
                       console.log("Unsupported "+branch.children[guessIndex].ruleIndex);
 //                      console.log(branch);
@@ -527,6 +556,158 @@ pmc.cnc.Generator = class Generator {
         return code;
     }
     
+    scanAhead(branch, component){
+          if(typeof branch.ruleIndex==='number'){
+              switch(branch.ruleIndex){
+                case this.RULE_scope:
+                  component.push("{");
+                  console.log("scanAhead RULE_scope" );
+                  for(var guessIndex=1;guessIndex<branch.children.length-1;guessIndex++){
+                    if(typeof branch.children[guessIndex].ruleIndex==='number')
+                    switch(branch.children[guessIndex].ruleIndex){
+                      case this.RULE_implicit_scope:
+                      this.scanAhead(branch.children[guessIndex], component);
+                      break;
+                    }
+                  }
+                  component.push("}");
+                  break;
+                case this.RULE_implicit_scope:
+                  for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
+                    if(typeof branch.children[guessIndex].ruleIndex==='number')
+                    switch(branch.children[guessIndex].ruleIndex){
+                      case this.RULE_implicit_scope:
+                      this.scanAhead(branch.children[guessIndex], component);
+                      break;
+                      default:
+                      this.scanAhead(branch.children[guessIndex], component);
+                      break;
+                    }
+                    else this.scanAhead(branch.children[guessIndex], component);
+                  }
+                    break;
+                case this.RULE_booleans:
+                    this.scanAhead(branch.children[0], component);
+                break;
+                  case this.RULE_union_of:
+                    component.push("new pmc.booleans.Union");
+                   break;
+                  case this.RULE_intersection:
+                    component.push("new pmc.booleans.Intersection");
+                   break;
+                  case this.RULE_difference:
+                    component.push("new pmc.booleans.Difference");
+                   break;
+                case this.RULE_color:
+                    var code = "this.style = \"color: ";
+                      for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
+                        if(typeof branch.children[guessIndex].ruleIndex==='number')
+                        switch(branch.children[guessIndex].ruleIndex){
+                          case this.RULE_red:
+                          code += "rgb(255*"+this.codeUp(branch.children[guessIndex].children[0]);
+                          break;
+                          case this.RULE_green:
+                          code += ", 255*"+this.codeUp(branch.children[guessIndex].children[0]);
+                          break;
+                          case this.RULE_blue:
+                          code += ", 255*"+this.codeUp(branch.children[guessIndex].children[0])+")";
+                          break;
+                        }
+                      }
+                      code += "\";\n";
+                      component.push(code);
+                    break;
+                case this.RULE_cylinder:
+                  var code = "new pmc.component.Cylinder(";
+                  var firstArg=true;
+                  for(var argIndex=0;argIndex<branch.children.length;argIndex++){
+                    switch(branch.children[argIndex].ruleIndex){
+                      case this.RULE_h:
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "h = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_r1:
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "r1 = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_r2:
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "r2 = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_center:
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "center = "+this.codeUp(branch.children[argIndex].children[2]);
+                        break;
+                      case this.RULE_fa:
+                        if(!firstArg)code += ", ";
+                        else firstArg=false;
+                        code += "fa = "+this.codeUp(branch.children[argIndex].children[3]);
+                        break;
+                      default:
+                        //console.log("arg ");
+                        //console.log(branch.children[argIndex]);
+                        break;
+                    }
+                  }
+                  code += ")";
+                  component.push(code);
+                  break;
+                case this.RULE_transforms:
+                    //console.log("transforms "+branch.children[0].children.length);
+                    switch(branch.children[0].ruleIndex){
+                      case this.RULE_translate:
+                        var code = "";
+                        switch(branch.children[0].children[2].ruleIndex){
+                          case this.RULE_equation:
+                            code += this.codeUp(branch.children[0].children[2]);
+                            break;
+                          case this.RULE_expression:
+                            code += "t="+this.codeUp(branch.children[0].children[2]);
+                            break;
+                        }
+                        component.push(code);
+                      break;
+                      default:
+                      console.log("unsupported");
+                      console.log(branch.children[0]);
+                      break;
+                    }
+                  break;
+                case this.RULE_call:
+                  console.log("call "+branch.children.length);
+                  var firstArg = true;
+                  var code = this.codeUp(branch.children[0].children[0])+"(";
+                    for(var guessIndex=1;guessIndex<branch.children.length;guessIndex++){
+                      if(typeof branch.children[guessIndex].ruleIndex==='number')
+                      if(!firstArg){code += ", ";firstArg = false;}
+                        code += this.codeUp(branch.children[guessIndex]);
+                    }
+                  code +=")";
+                  component.push(code);
+                    break;
+                default:
+                    console.log("comp Unsupported component "+branch.ruleIndex);
+                    //console.log(branch);
+                    break;
+              }
+          }
+          else if(typeof branch.symbol==='object'){
+            console.log("ahead symbol "+(typeof branch.symbol));
+            if(branch.symbol.type===this.LBrace){
+               component.push("{");
+            }
+            if(branch.symbol.type===this.RBrace){
+               component.push("}");
+            }
+          }
+            
+      return component;
+    }
+    
     codeUpComponent(branch){
         var code="";
           if(typeof branch.ruleIndex==='number'){
@@ -585,7 +766,7 @@ pmc.cnc.Generator = class Generator {
                         break;
                     }
                   }
-                  code += ");\n";
+                  code += ")";
                   break;
                 case this.RULE_transforms:
                     console.log("transforms "+branch.children[0].children.length);
@@ -594,10 +775,10 @@ pmc.cnc.Generator = class Generator {
                         code += "this.translate=";
                         switch(branch.children[0].children[2].ruleIndex){
                           case this.RULE_equation:
-                            code += "this."+this.codeUp(branch.children[0].children[2])+";\n";
+                            code += "this."+this.codeUp(branch.children[0].children[2]);
                             break;
                           case this.RULE_expression:
-                            code += "this.t="+this.codeUp(branch.children[0].children[2])+";\n";
+                            code += "this.t="+this.codeUp(branch.children[0].children[2]);
                             break;
                         }
                       break;
