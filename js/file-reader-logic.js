@@ -24,7 +24,6 @@
                 resolve("completed.");
             }
             fileReader.readAsText(f);
-        }).then((result)=>{
-          console.log(result);}, (err)=>{console.log('err: '+err);
+        }).then((result)=>{}, (err)=>{console.log('err: '+err);
         });
   }

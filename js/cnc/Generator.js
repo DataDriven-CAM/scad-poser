@@ -286,8 +286,8 @@ pmc.cnc.Generator = class Generator {
     	var event = new Event('change');
 
     	opa.dispatchEvent(event);
-    	var body = this.codeUpModule(this.tree);
-      console.log("body "+body);
+    	var body = this.codeUpScope(this.tree);
+    	opa.value+=body +"\n";
     	var runner = new Function ('parent', body);
     	runner(this);
     	opa.scrollTop = opa.scrollHeight;
@@ -297,7 +297,7 @@ pmc.cnc.Generator = class Generator {
         console.log(runner);
     }
     
-    codeUpModule(branch){
+    codeUpScope(branch){
       var code = "";
         for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
           if(typeof branch.children[guessIndex].ruleIndex==='number'){
@@ -322,19 +322,17 @@ pmc.cnc.Generator = class Generator {
                     }
                     code+="){\n";
                       while(codeIndex<branch.children[guessIndex].children.length && (typeof branch.children[guessIndex].children[codeIndex].symbol!=='object' || branch.children[guessIndex].children[codeIndex].symbol.type!==this.Semicolon)){
-                        console.log("mod "+branch.children[guessIndex].children[codeIndex].children.length);
-                        console.log(branch.children[guessIndex].children[codeIndex]);
                         for(var lineIndex=0;lineIndex<branch.children[guessIndex].children[codeIndex].children.length;lineIndex++){
                           ///console.log(scopeIndex+" scope "+( branch.children[guessIndex].children[codeIndex].children[lineIndex]));
                           if(typeof branch.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex==='number')
                           switch(branch.children[guessIndex].children[codeIndex].children[lineIndex].ruleIndex){
                             case this.RULE_scope:
                               var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
-                              code += this.codeUpModule(scope);
+                              code += this.codeUpScope(scope);
                             break;
                             case this.RULE_implicit_scope:
                               var scope = branch.children[guessIndex].children[codeIndex].children[lineIndex];
-                              code += this.codeUpModule(scope);
+                              code += this.codeUpScope(scope);
                             break;
                           }
                         }
@@ -343,10 +341,11 @@ pmc.cnc.Generator = class Generator {
                     code += "}\n\n";
                     break;
                   case this.RULE_scope:
-                    code += this.codeUpModule(branch.children[guessIndex]);
+                    console.log("mod RULE_scope");
+                    code += "{\n"+this.codeUpScope(branch.children[guessIndex])+"\n}\n";
                     break;
                   case this.RULE_implicit_scope:
-                    code += this.codeUpModule(branch.children[guessIndex]);
+                    code += this.codeUpScope(branch.children[guessIndex]);
                     break;
                   case this.RULE_booleans:
                   case this.RULE_component:
@@ -410,7 +409,7 @@ pmc.cnc.Generator = class Generator {
                       codeIndex++;
                       while(codeIndex<branch.children[guessIndex].children.length){
                         if(typeof branch.children[guessIndex].children[codeIndex].ruleIndex==='number')
-                        code+=this.codeUpModule(branch.children[guessIndex].children[codeIndex]);
+                        code+=this.codeUpScope(branch.children[guessIndex].children[codeIndex]);
                         codeIndex++;
                       }
                       code += "}\n";
@@ -513,9 +512,7 @@ pmc.cnc.Generator = class Generator {
                       break;
                   case this.RULE_equation:
                       code+=branch.children[0].start.text +"=";
-                      console.log("eq "+branch.children.length);
                       for(var eqIndex=2;eqIndex<branch.children.length;eqIndex++){
-                      console.log(eqIndex+" eq "+branch.children[eqIndex].ruleIndex);
                       code+=this.codeUp(branch.children[eqIndex]);
                       }
                       break;
@@ -688,6 +685,9 @@ pmc.cnc.Generator = class Generator {
                     }
                   code +=")";
                   component.push(code);
+                  break;
+                case this.RULE_children:
+                  component.push('children');
                     break;
                 default:
                     console.log("comp Unsupported component "+branch.ruleIndex);
