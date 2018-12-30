@@ -299,6 +299,7 @@ pmc.cnc.Generator = class Generator {
     
     codeUpScope(branch){
       var code = "";
+      var component = new Array();
         for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
           if(typeof branch.children[guessIndex].ruleIndex==='number'){
               switch(branch.children[guessIndex].ruleIndex){
@@ -342,16 +343,31 @@ pmc.cnc.Generator = class Generator {
                     break;
                   case this.RULE_scope:
                     console.log("mod RULE_scope");
-                    code += "{\n"+this.codeUpScope(branch.children[guessIndex])+"\n}\n";
+                    code += this.codeUpScope(branch.children[guessIndex]);
                     break;
                   case this.RULE_implicit_scope:
                     code += this.codeUpScope(branch.children[guessIndex]);
                     break;
                   case this.RULE_booleans:
+                    console.log("booleans ");
+                    console.log(branch.children[guessIndex].children[0]);
+                    switch(branch.children[guessIndex].children[0].ruleIndex){
+                      case this.RULE_union_of:
+                        component.push("new pmc.booleans.Union");
+                       break;
+                      case this.RULE_intersection:
+                        component.push("new pmc.booleans.Intersection");
+                       break;
+                      case this.RULE_difference:
+                        component.push("new pmc.booleans.Difference");
+                       break;
+                      
+                    }
+                    guessIndex++;
+                    console.log(branch.children[guessIndex]);
                   case this.RULE_component:
                     //console.log(branch.children[guessIndex]);
-                    var component = new Array();
-                    this.scanAhead(branch.children[guessIndex].children[0], component);
+                    this.scanAhead(branch.children[guessIndex], component, "\"color: [0,0,0]\"", new Object());
                     var compCode = "";
                     var booleansDepth = 0;
                     var argDepth = new Array();
@@ -553,7 +569,7 @@ pmc.cnc.Generator = class Generator {
         return code;
     }
     
-    scanAhead(branch, component){
+    scanAhead(branch, component, color, transform){
           if(typeof branch.ruleIndex==='number'){
               switch(branch.ruleIndex){
                 case this.RULE_scope:
@@ -563,7 +579,7 @@ pmc.cnc.Generator = class Generator {
                     if(typeof branch.children[guessIndex].ruleIndex==='number')
                     switch(branch.children[guessIndex].ruleIndex){
                       case this.RULE_implicit_scope:
-                      this.scanAhead(branch.children[guessIndex], component);
+                      this.scanAhead(branch.children[guessIndex], component, color, transform);
                       break;
                     }
                   }
@@ -574,17 +590,18 @@ pmc.cnc.Generator = class Generator {
                     if(typeof branch.children[guessIndex].ruleIndex==='number')
                     switch(branch.children[guessIndex].ruleIndex){
                       case this.RULE_implicit_scope:
-                      this.scanAhead(branch.children[guessIndex], component);
+                      this.scanAhead(branch.children[guessIndex], component, color, transform);
                       break;
                       default:
-                      this.scanAhead(branch.children[guessIndex], component);
+                      this.scanAhead(branch.children[guessIndex], component, color, transform);
                       break;
                     }
-                    else this.scanAhead(branch.children[guessIndex], component);
+                    else this.scanAhead(branch.children[guessIndex], component, color, transform);
                   }
                     break;
                 case this.RULE_booleans:
-                    this.scanAhead(branch.children[0], component);
+                case this.RULE_component:
+                    this.scanAhead(branch.children[0], component, color, transform);
                 break;
                   case this.RULE_union_of:
                     component.push("new pmc.booleans.Union");
@@ -596,26 +613,25 @@ pmc.cnc.Generator = class Generator {
                     component.push("new pmc.booleans.Difference");
                    break;
                 case this.RULE_color:
-                    var code = "this.style = \"color: ";
+                    color = "\"color: ";
                       for(var guessIndex=0;guessIndex<branch.children.length;guessIndex++){
                         if(typeof branch.children[guessIndex].ruleIndex==='number')
                         switch(branch.children[guessIndex].ruleIndex){
                           case this.RULE_red:
-                          code += "rgb(255*"+this.codeUp(branch.children[guessIndex].children[0]);
+                          color += "rgb(255*"+this.codeUp(branch.children[guessIndex].children[0]);
                           break;
                           case this.RULE_green:
-                          code += ", 255*"+this.codeUp(branch.children[guessIndex].children[0]);
+                          color += ", 255*"+this.codeUp(branch.children[guessIndex].children[0]);
                           break;
                           case this.RULE_blue:
-                          code += ", 255*"+this.codeUp(branch.children[guessIndex].children[0])+")";
+                          color += ", 255*"+this.codeUp(branch.children[guessIndex].children[0])+")";
                           break;
                         }
                       }
-                      code += "\";\n";
-                      component.push(code);
+                      color += "\"";
                     break;
                 case this.RULE_cylinder:
-                  var code = "new pmc.component.Cylinder(";
+                  var code = "new pmc.component.Cylinder("+color+", ";
                   var firstArg=true;
                   for(var argIndex=0;argIndex<branch.children.length;argIndex++){
                     switch(branch.children[argIndex].ruleIndex){

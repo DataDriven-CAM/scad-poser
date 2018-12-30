@@ -86,6 +86,7 @@
   -webkit-box-sizing:border-box;
   box-sizing:border-box;
   resize: none;
+    font: inherit;
 }
 
 .repository-interface {
@@ -93,7 +94,7 @@
     width:600px;
     border:2px solid tomato;
     border-radius:7px;
-    font-size:20px;
+    font-size:16px;
     padding:5px;
     margin-top:-10px;    
 }
