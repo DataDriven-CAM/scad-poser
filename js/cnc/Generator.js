@@ -111,28 +111,30 @@ pmc.cnc.Generator = class Generator {
         this.R = 101;
         this.D = 102;
         this.H = 103;
-        this.Float = 104;
-        this.Number = 105;
-        this.Minus = 106;
-        this.Plus = 107;
-        this.Multiply = 108;
-        this.LessThan = 109;
-        this.GreaterThan = 110;
-        this.Not = 111;
-        this.Ampersand = 112;
-        this.Pipe = 113;
-        this.Question = 114;
-        this.Colon = 115;
-        this.String = 116;
-        this.NameStartChar = 117;
-        this.NameChar = 118;
-        this.Fa = 119;
-        this.Fs = 120;
-        this.Fn = 121;
-        this.Vpr = 122;
-        this.Vpt = 123;
-        this.Vpd = 124;
-        this.T = 125;
+        this.R1 = 104;
+        this.R2 = 105;
+        this.Float = 106;
+        this.Number = 107;
+        this.Minus = 108;
+        this.Plus = 109;
+        this.Multiply = 110;
+        this.LessThan = 111;
+        this.GreaterThan = 112;
+        this.Not = 113;
+        this.Ampersand = 114;
+        this.Pipe = 115;
+        this.Question = 116;
+        this.Colon = 117;
+        this.String = 118;
+        this.NameStartChar = 119;
+        this.NameChar = 120;
+        this.Fa = 121;
+        this.Fs = 122;
+        this.Fn = 123;
+        this.Vpr = 124;
+        this.Vpt = 125;
+        this.Vpd = 126;
+        this.T = 127;
         
         this.RULE_scad = 0;
         this.RULE_use_line = 1;
@@ -348,53 +350,20 @@ pmc.cnc.Generator = class Generator {
                   case this.RULE_implicit_scope:
                     code += this.codeUpScope(branch.children[guessIndex]);
                     break;
+                  case this.RULE_transforms:
                   case this.RULE_booleans:
-                    console.log("booleans ");
-                    console.log(branch.children[guessIndex].children[0]);
-                    switch(branch.children[guessIndex].children[0].ruleIndex){
-                      case this.RULE_union_of:
-                        component.push("new pmc.booleans.Union");
-                       break;
-                      case this.RULE_intersection:
-                        component.push("new pmc.booleans.Intersection");
-                       break;
-                      case this.RULE_difference:
-                        component.push("new pmc.booleans.Difference");
-                       break;
-                      
-                    }
+                    this.scanAhead(branch.children[guessIndex].children[0], component, "\"color: [0,0,0]\"", "{translate: [0,0,0], rotate: [0,0,0]}");
                     guessIndex++;
-                    console.log(branch.children[guessIndex]);
+                    while(guessIndex<branch.children.length && (typeof branch.children[guessIndex].ruleIndex==='number')){
+                      this.scanAhead(branch.children[guessIndex], component, "\"color: [0,0,0]\"", "{translate: [0,0,0], rotate: [0,0,0]}");
+                      guessIndex++;
+                    }
+                    code += "this.component = "+this.buildComponent(component);
+                    break;
                   case this.RULE_component:
                     //console.log(branch.children[guessIndex]);
-                    this.scanAhead(branch.children[guessIndex], component, "\"color: [0,0,0]\"", new Object());
-                    var compCode = "";
-                    var booleansDepth = 0;
-                    var argDepth = new Array();
-                    argDepth.push(0);
-                    for(var reverseIndex=0;reverseIndex<component.length;reverseIndex++){
-                        if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("new pmc.booleans.") ){
-                          if(booleansDepth>0){
-                            compCode += ", ";
-                          }
-                          compCode += component[reverseIndex];
-                          booleansDepth++;
-                          argDepth.push(0);
-                        }
-                        else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("new pmc.component.") ){
-                          if(argDepth[booleansDepth]>0)compCode += ", ";
-                          compCode += component[reverseIndex];
-                          argDepth[booleansDepth]++;
-                        }
-                        else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("{") ){
-                          compCode += "(";
-                        }
-                        else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("}") ){
-                          compCode += ")";
-                        }
-                        else console.log(reverseIndex+" comp "+component[reverseIndex]);
-                    }
-                    code += compCode;
+                    this.scanAhead(branch.children[guessIndex], component, "\"color: [0,0,0]\"", "{translate: [0,0,0], rotate: [0,0,0]}");
+                    code += this.buildComponent(component);
                     break;
                   case this.RULE_for_loop:
                       console.log("for_loop "+branch.children[guessIndex].children.length);
@@ -461,6 +430,36 @@ pmc.cnc.Generator = class Generator {
           }
         }
         return code;
+    }
+    
+    buildComponent(component){
+      var compCode = "";
+      var booleansDepth = 0;
+      var argDepth = new Array();
+      argDepth.push(0);
+      for(var reverseIndex=0;reverseIndex<component.length;reverseIndex++){
+          if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("new pmc.booleans.") ){
+            if(booleansDepth>0){
+              compCode += ", ";
+            }
+            compCode += component[reverseIndex];
+            booleansDepth++;
+            argDepth.push(0);
+          }
+          else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("new pmc.component.") ){
+            if(argDepth[booleansDepth]>0)compCode += ", ";
+            compCode += component[reverseIndex];
+            argDepth[booleansDepth]++;
+          }
+          else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("{") ){
+            //compCode += "(";
+          }
+          else if(typeof component[reverseIndex] === 'string' && component[reverseIndex].startsWith("}") ){
+            compCode += ")";
+          }
+          else console.log(reverseIndex+" comp "+component[reverseIndex]);
+      }
+      return compCode;
     }
     
     codeUp(branch){
@@ -604,13 +603,13 @@ pmc.cnc.Generator = class Generator {
                     this.scanAhead(branch.children[0], component, color, transform);
                 break;
                   case this.RULE_union_of:
-                    component.push("new pmc.booleans.Union");
+                    component.push("new pmc.booleans.Union("+color+", "+transform);
                    break;
                   case this.RULE_intersection:
-                    component.push("new pmc.booleans.Intersection");
+                    component.push("new pmc.booleans.Intersection("+color+", "+transform);
                    break;
                   case this.RULE_difference:
-                    component.push("new pmc.booleans.Difference");
+                    component.push("new pmc.booleans.Difference("+color+", "+transform);
                    break;
                 case this.RULE_color:
                     color = "\"color: ";
@@ -631,7 +630,7 @@ pmc.cnc.Generator = class Generator {
                       color += "\"";
                     break;
                 case this.RULE_cylinder:
-                  var code = "new pmc.component.Cylinder("+color+", ";
+                  var code = "new pmc.component.Cylinder("+color+", "+transform+", ";
                   var firstArg=true;
                   for(var argIndex=0;argIndex<branch.children.length;argIndex++){
                     switch(branch.children[argIndex].ruleIndex){

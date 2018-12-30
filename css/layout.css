@@ -27,7 +27,7 @@
     z-index: 4;
     
 }
-.tabcontent editcontent menucontent {
+.tabcontent .editcontent .menucontent {
     font: inherit;
   -moz-box-sizing:border-box;
   -webkit-box-sizing:border-box;
@@ -46,7 +46,7 @@
 }
 
 /* Style the tab content */
-.tabcontent, .menucontent, .editcontent {
+.tabcontent .editcontent .menucontent {
     display: none;
     border: 1px solid #ccc;
     border-top: none;
