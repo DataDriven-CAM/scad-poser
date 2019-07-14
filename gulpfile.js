@@ -5,9 +5,7 @@ var uglify = require('gulp-uglify');
 //var antlr4 = require('gulp-antlr4');
 
 //script paths
-var jsFiles = 'bower_components/antlr4/runtime/JavaScript/src/antlr4/**/*.js',
-    streamSaverFiles = 'bower_components/StreamSaver.js/**/*.js',
-    cytoscapeFile = 'bower_components/cytoscape/dist/*.min.js',
+var jsFiles = '/home/roger/Software/antlr4-dev/runtime/JavaScript/src/antlr4/**/*.js',
     velvetFile = '../velvet/Velvet.js',
     velvetFiles = '../velvet/**/*.js',
     antlr4File = '../antlr4/runtime/JavaScript/src/antlr4/index.js',
@@ -28,7 +26,7 @@ gulp.task('set-java-env', function(done) {
 });
 
 gulp.task('antlr4-symlink', function(done) {
-    return gulp.src(['/home/roger/NodeProjects/antlr4_2/runtime/JavaScript/src/antlr4'])
+    return gulp.src(['/home/roger/Software/antlr4-dev/runtime/JavaScript/src/antlr4'])
         .pipe(gulp.symlink(modDest));
 });
 
@@ -45,7 +43,7 @@ gulp.task('velvet-css-copy', function(done) {
 });
 
 gulp.task('cytoscape-copy', function(done) {
-    return gulp.src([cytoscapeFile])
+    return gulp.src(['../cytoscape.js/dist/*.min.js'])
         .pipe(gulp.dest(jsDest));
 });
 
@@ -56,17 +54,17 @@ gulp.task('cytoscape-atn-copy', function(done) {
 });
 
 gulp.task('jstree-copy', function(done) {
-    return gulp.src(['bower_components/jstree/dist/**/*'])
+    return gulp.src(['../jstree/dist/**/*'])
         .pipe(gulp.dest(jsDest+'/jstree'));
 });
 
 gulp.task('jquery-copy', function(done) {
-    return gulp.src(['bower_components/jquery/dist/**/*'])
+    return gulp.src(['../jquery/dist/**/*'])
         .pipe(gulp.dest(jsDest+'/jquery'));
 });
 
 gulp.task('jquery-ui-copy', function(done) {
-    return gulp.src(['bower_components/jquery-ui/**/*'])
+    return gulp.src(['../jquery-ui/**/*'])
         .pipe(gulp.dest(jsDest+'/jquery-ui'));
 });
 
