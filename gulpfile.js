@@ -2,14 +2,15 @@ var gulp = require('gulp');
 var concat = require('gulp-concat');
 var rename = require('gulp-rename');
 var uglify = require('gulp-uglify');
+var run = require('gulp-run');
 //var antlr4 = require('gulp-antlr4');
 
 //script paths
 var jsFiles = '/home/roger/Software/antlr4-dev/runtime/JavaScript/src/antlr4/**/*.js',
     velvetFile = '../velvet/Velvet.js',
     velvetFiles = '../velvet/**/*.js',
-    antlr4File = '../antlr4/runtime/JavaScript/src/antlr4/index.js',
-    antlr4Files = '../antlr4/runtime/JavaScript/src/antlr4/**/*.js',
+    antlr4File = './node_modules/antlr4/index.js',
+    antlr4Files = './node_modules/antlr4/**/*.js',
     cssFile = '../velvet/css/velvet.css',
     atnFile = '../cytoscape-atn/layout.js',
     atnFiles = '../cytoscape-atn/**/*.js',
@@ -21,13 +22,13 @@ var jsFiles = '/home/roger/Software/antlr4-dev/runtime/JavaScript/src/antlr4/**/
     modDest = "./node_modules"
 
 gulp.task('set-java-env', function(done) {
-    process.env.JAVA_HOME='/home/roger/jdk1.8.0_05';
+    process.env.JAVA_HOME='/home/roger/jdk1.8.0_151';
     done();
 });
 
 gulp.task('antlr4-symlink', function(done) {
     return gulp.src(['/home/roger/Software/antlr4-dev/runtime/JavaScript/src/antlr4'])
-        .pipe(gulp.symlink(modDest));
+        .pipe(gulp.symlink(modDest)).pipe(gulp.dest(rootDest));
 });
 
 gulp.task('velvet-copy', function(done) {
@@ -59,12 +60,12 @@ gulp.task('jstree-copy', function(done) {
 });
 
 gulp.task('jquery-copy', function(done) {
-    return gulp.src(['../jquery/dist/**/*'])
+    return gulp.src(['./node_modules/jquery/dist/**/*'])
         .pipe(gulp.dest(jsDest+'/jquery'));
 });
 
 gulp.task('jquery-ui-copy', function(done) {
-    return gulp.src(['../jquery-ui/**/*'])
+    return gulp.src(['./node_modules/jquery-ui/dist/**/*'])
         .pipe(gulp.dest(jsDest+'/jquery-ui'));
 });
 
@@ -73,16 +74,28 @@ gulp.task('solid-fs-copy', function(done) {
         .pipe(gulp.dest(jsDest));
 });
 
+gulp.task('isomorphic-git-copy', function(done) {
+   return gulp.src(['../isomorphic-git/index.umd.min*.*'])
+        .pipe(gulp.dest(jsDest+'/isomorphic-git'));
+});
+
 gulp.task('require-copy', function(done) {
     return gulp.src([requireFile])
         .pipe(gulp.dest(jsDest));
 });
 
 gulp.task('default', gulp.series('set-java-env', gulp.series('antlr4-symlink', gulp.series('velvet-copy',
-        gulp.series('velvet-css-copy', gulp.series('cytoscape-copy', gulp.series('cytoscape-atn-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy',gulp.parallel('solid-fs-copy','require-copy')))), (done) => {
+        gulp.series('velvet-css-copy', gulp.series('cytoscape-copy', gulp.series('cytoscape-atn-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy',gulp.parallel('solid-fs-copy', 'isomorphic-git-copy','require-copy')))), (done) => {
   // place code for your default task here
   done();
 }))))))));
+
+gulp.task('buildjquery', function () {
+
+    // run an npm command called `test`, when above js file changes
+    run('npm run buildjquery').exec();
+
+});
 
 /*gulp.task('scripts', function(done) {
     return gulp.src(jsFiles)

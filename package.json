@@ -4,6 +4,7 @@
   "description": "Extended scad editor, viewer and cnc generator",
   "main": "index.js",
   "scripts": {
+    "buildjquery": "cd ./node_modules/jquery-ui && npm install && grunt && cd ../jquery && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": "git+https://github.com/DataDriven-CAM/scad-poser.git",
@@ -16,10 +17,15 @@
   "devDependencies": {
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
-    "gulp-rename": "^1.4.0",
-    "gulp-uglify": "^3.0.1"
+    "gulp-rename": "^2.0.0",
+    "gulp-uglify": "^3.0.1",
+    "gulp-run": "^1.7.1"
   },
   "dependencies": {
-    "@tarp/require": "letorbi/tarp.require"
+    "@tarp/require": "letorbi/tarp.require",
+    "isomorphic-git": "isomorphic-git/isomorphic-git",
+    "jquery-ui": "1.12.1",
+    "jquery": "^3.5.1",
+    "cytoscape-dagre" : "cytoscape/cytoscape.js-dagre"
   }
 }

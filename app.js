@@ -6,8 +6,8 @@ var url = require('url')
 var fs = require('fs')
 
   var theServer=https.createServer({
-      key: fs.readFileSync('/home/roger/NodeProjects/scad.key'),
-      cert: fs.readFileSync('/home/roger/NodeProjects/scad.cert')
+      key: fs.readFileSync('../scad.key'),
+      cert: fs.readFileSync('../scad.cert')
   }, (request, response) => {
      try {
        var requestUrl = url.parse(request.url);

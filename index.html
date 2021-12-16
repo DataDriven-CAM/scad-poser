@@ -13,16 +13,29 @@
   <link rel="stylesheet" type="text/css" href="css/preferences.css"/>
   <link rel="stylesheet" type="text/css" href="css/velvet.css">
   <link rel="stylesheet" type="text/css" href="css/atn-graph.css">
-
+  <style  type="text/css">
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+  </style>
   <script src="js/require.js"></script>
   <script src="js/velvet.js"></script>
   <script src="js/cytoscape.min.js"></script>
   <script src="js/cytoscape-atn.js"></script>
   <script src="js/lib/cytoscape-dagre.js"></script>
   <script src="js/atn-graph.js"></script>
-  <script type="text/javascript" src="js/bundle.umd.min.js"></script>
+  <script type="text/javascript" src="js/N3.bundle.js"></script>
   <script type="text/javascript" src="js/jquery/jquery.min.js"></script>
-  <script type="text/javascript" src="js/jquery-ui/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui/jquery-ui.js"></script>
   <script type="text/javascript" src="js/jstree/jstree.min.js"></script>
   <script type="text/javascript" src="js/solid-fs.js"></script>
   <script type="text/javascript" src="js/rdflib.min.js"></script>
@@ -32,11 +45,18 @@
   <script type="text/javascript" src="js/Menu.js"></script>
   <script type="text/javascript" src="js/Preferences.js"></script>
   <script type="text/javascript" src="js/cnc/Generator.js"></script>
-  <script type="text/javascript" src="js/scad/component/Cylinder.js"></script>
+  <!--script type="text/javascript" src="js/scad/component/Cylinder.js"></script-->
+  <!--script src="https://unpkg.com/isomorphic-git"></script-->
+  <!--script src="https://unpkg.com/isomorphic-git@beta/http/web/index.js"></script-->
+  <script type="text/javascript" src="js/isomorphic-git/index.umd.min.js"></script>
+  <script type="text/javascript" src="js/isomorphic-git/http/web/index.umd.js"></script>
 <script type="application/javascript">
 var require = Tarp.require;
 var antlr4 = require({main: './antlr4/index', sync: true});
 var scad = require({main: './scad/index', sync: true});
+//const git = require({main: './isomorphic-git/index.umd.min', sync: true});
+http = require({main: './js/isomorphic-git/http/web/index.umd', sync: true});
+
 
 var ATNState = require({main: 'antlr4/atn/ATNState', sync: true}).ATNState;
 
@@ -332,6 +352,7 @@ menu.append("Windows", "Preferences", (event) => {
 function changeRepository(value){
   if(value.endsWith(".git")){
     var info = git.getRemoteInfo({
+      http,
       corsProxy: 'https://cors.isomorphic-git.org',
   url: value
 }).then((response) => {
