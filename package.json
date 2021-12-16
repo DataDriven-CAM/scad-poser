@@ -23,9 +23,9 @@
   },
   "dependencies": {
     "@tarp/require": "letorbi/tarp.require",
-    "isomorphic-git": "isomorphic-git/isomorphic-git",
-    "jquery-ui": "1.12.1",
-    "jquery": "^3.5.1",
+    "isomorphic-git": "isomorphic-git/isomorphic-git#main",
+    "jquery-ui": "^1.13.0",
+    "jquery": "^3.6.0",
     "cytoscape-dagre" : "cytoscape/cytoscape.js-dagre"
   }
 }
