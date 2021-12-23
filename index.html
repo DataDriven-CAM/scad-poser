@@ -33,13 +33,14 @@
   <script src="js/cytoscape-atn.js"></script>
   <script src="js/lib/cytoscape-dagre.js"></script>
   <script src="js/atn-graph.js"></script>
-  <script type="text/javascript" src="js/N3.bundle.js"></script>
+  <script type="text/javascript" src="js/n3.min.js"></script>
   <script type="text/javascript" src="js/jquery/jquery.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui/jquery-ui.js"></script>
   <script type="text/javascript" src="js/jstree/jstree.min.js"></script>
   <script type="text/javascript" src="js/solid-fs.js"></script>
   <script type="text/javascript" src="js/rdflib.min.js"></script>
-  <script type="text/javascript" src="js/solid-auth-client.bundle.js"></script>
+  <script type="text/javascript" src="js/solid-client-authn-browser/solid-client-authn.bundle.js"></script>
+  <!--script src="https://cdn.jsdelivr.net/npm/@inrupt/solid-client-authn-browser/dist/solid-client-authn.bundle.js"></script-->
   <script type="text/javascript" src="js/Drawer.js"></script>
   <script type="text/javascript" src="js/Tabs.js"></script>
   <script type="text/javascript" src="js/Menu.js"></script>
@@ -50,11 +51,11 @@
   <!--script src="https://unpkg.com/isomorphic-git@beta/http/web/index.js"></script-->
   <script type="text/javascript" src="js/isomorphic-git/index.umd.min.js"></script>
   <script type="text/javascript" src="js/isomorphic-git/http/web/index.umd.js"></script>
-<script type="application/javascript">
+<script type="text/javascript">
 var require = Tarp.require;
 var antlr4 = require({main: './antlr4/index', sync: true});
 var scad = require({main: './scad/index', sync: true});
-//const git = require({main: './isomorphic-git/index.umd.min', sync: true});
+//const git = require({main: './js/isomorphic-git/index.umd.min', sync: true});
 http = require({main: './js/isomorphic-git/http/web/index.umd', sync: true});
 
 
@@ -379,6 +380,8 @@ function changeRepository(value){
 });
 
 /*git.clone({
+    fs: window.fs,
+    http,
     dir,
     corsProxy: 'https://cors.isomorphic-git.org',
     url: 'https://github.com/DataDriven-CAM/scad-poser.git',
@@ -409,12 +412,22 @@ $(function() {
 
 
 const FOAF = $rdf.Namespace('http://xmlns.com/foaf/0.1/');
-async function login(idp) {
-  const session = await solid.auth.currentSession();
-  if (!session)
-    await solid.auth.login(idp);
-  else
-    console.log(`Logged in as ${session.webId}`);
+async function loginToPod(idp) {
+    await solidClientAuthentication.handleIncomingRedirect();
+  if (!solidClientAuthentication.getDefaultSession().info.isLoggedIn) {
+    // The `login()` redirects the user to their identity provider;
+    // i.e., moves the user away from the current page.
+    await solidClientAuthentication.login({
+      // Specify the URL of the user's Solid Identity Provider; e.g., "https://broker.pod.inrupt.com" or "https://inrupt.net"
+      oidcIssuer: "https://localhost:8443/",
+      // Specify the URL the Solid Identity Provider should redirect to after the user logs in,
+      // e.g., the current page for a single-page app.
+      redirectUrl: window.location.href,
+      // Pick an application name that will be shown when asked 
+      // to approve the application's access to the requested data.
+      clientName: "SCAD Client"
+    });
+  }
     
   // Set up a local data store and associated data fetcher
   /*const store = $rdf.graph();
@@ -427,9 +440,9 @@ async function login(idp) {
   // Display their details
   const fullName = store.any($rdf.sym(person), FOAF('name'));*/
   //document.getElementById("fullName").value=fullName && fullName.value;
-  window.fs = new SolidFileSystem(session.webId);
+  window.fs = new SolidFileSystem(solidClientAuthentication.getDefaultSession());
   // Initialize isomorphic-git with our new file system
-  git.plugins.set('fs', window.fs);
+  //git.plugins.set('fs', window.fs);
   
   /*fs.readFile(".preferences", (err, data) => {
     if(err!=null){
@@ -441,7 +454,7 @@ async function login(idp) {
     }
   });*/
 }
-//login('https://roger.localhost:8443/');        
+//loginToPod('https://roger.localhost:8443/');        
 
 $(function () {
 
@@ -615,6 +628,7 @@ function createFSTree(jsondata) {
    }
 //    event.target.appendChild(li);
   }*/
+loginToPod('https://roger.localhost:8443/');        
 
 </script>
 

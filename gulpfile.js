@@ -75,8 +75,13 @@ gulp.task('solid-fs-copy', function(done) {
 });
 
 gulp.task('isomorphic-git-copy', function(done) {
-   return gulp.src(['../isomorphic-git/index.umd.min*.*'])
+   return gulp.src(['../isomorphic-git/**/*'])
         .pipe(gulp.dest(jsDest+'/isomorphic-git'));
+});
+
+gulp.task('solid-client-authn-js-copy', function(done) {
+    return gulp.src(['../solid-client-authn-js/packages/browser/dist/**/*'])
+        .pipe(gulp.dest(jsDest+'/solid-client-authn-browser'));
 });
 
 gulp.task('require-copy', function(done) {
@@ -85,7 +90,7 @@ gulp.task('require-copy', function(done) {
 });
 
 gulp.task('default', gulp.series('set-java-env', gulp.series('antlr4-symlink', gulp.series('velvet-copy',
-        gulp.series('velvet-css-copy', gulp.series('cytoscape-copy', gulp.series('cytoscape-atn-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy',gulp.parallel('solid-fs-copy', 'isomorphic-git-copy','require-copy')))), (done) => {
+        gulp.series('velvet-css-copy', gulp.series('cytoscape-copy', gulp.series('cytoscape-atn-copy', gulp.series(gulp.parallel('jstree-copy',gulp.parallel('jquery-copy',gulp.parallel('jquery-ui-copy',gulp.parallel('solid-fs-copy', 'isomorphic-git-copy', 'solid-client-authn-js-copy','require-copy')))), (done) => {
   // place code for your default task here
   done();
 }))))))));

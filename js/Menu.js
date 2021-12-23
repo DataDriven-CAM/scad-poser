@@ -15,13 +15,13 @@ class Menu{
         var menuitem = document.createElement("input");
         menuitem.setAttribute("type", "submit");
         menuitem.setAttribute("value", name);
-        if(listener!=undefined)menuitem.addEventListener("click", listener);
+        if(listener!==undefined)menuitem.addEventListener("click", listener);
         il.appendChild(menuitem);
         theUl.appendChild(il);
       }
       else{
           var menus=theUl.querySelector("li input[value="+name+"]");
-          if(menus!=undefined){
+          if(menus!==undefined){
             var subchildren=menus.parentElement.getElementsByTagName('ul');
             var ul = (subchildren.length>0) ? subchildren[0] : document.createElement("ul");
             var il = document.createElement("li");

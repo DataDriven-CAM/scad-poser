@@ -6,6 +6,7 @@
 /css/velvet.css
 /js/antlr4/
 /js/isomorphic-git/
+/js/solid-client-authn-browser/
 /js/jquery/
 /js/jquery-ui/
 /js/jstree/
@@ -13,7 +14,7 @@
 /js/scad/
 /js/stringtemplate/
 /js/turtle/
-N3.*.js
+n3.*.js
 cytoscape*.js
 rdflib*.*
 solid-auth-client.*.*
